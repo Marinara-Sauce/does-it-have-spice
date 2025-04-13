@@ -1,39 +1,114 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Layout from '@/components/Layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { useToast } from '@/components/ui/use-toast';
-import { AlertCircle, CheckCircle2 } from 'lucide-react';
+import { toast } from '@/components/ui/sonner';
+import { AlertCircle, CheckCircle2, Shield } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 
 const Contribute = () => {
-  const { toast } = useToast();
+  const navigate = useNavigate();
+  const { user, loading } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formData, setFormData] = useState({
+    title: '',
+    author: '',
+    genre: '',
+    isbn: '',
+    smutLevel: '',
+    specificLocations: '',
+    notes: ''
+  });
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!loading && !user) {
+      toast("Authentication Required", {
+        description: "Please sign in to contribute to our database.",
+        icon: <Shield className="h-5 w-5 text-blue-500" />,
+      });
+      navigate('/auth?tab=login');
+    }
+  }, [user, loading, navigate]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { id, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [id]: value
+    }));
+  };
+
+  const handleRadioChange = (value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      smutLevel: value
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
     
-    // Simulate form submission
-    setTimeout(() => {
-      setIsSubmitting(false);
-      toast({
-        title: (
-          <div className="flex items-center gap-2">
-            <CheckCircle2 className="h-5 w-5 text-green-500" />
-            <span>Submission received!</span>
-          </div>
-        ),
+    try {
+      // Submit to Supabase
+      const { error } = await supabase.from('books').insert({
+        title: formData.title,
+        author: formData.author,
+        genre: formData.genre,
+        isbn: formData.isbn || null,
+        smut_level: formData.smutLevel,
+        specific_locations: formData.specificLocations || null,
+        notes: formData.notes || null,
+        created_by: user?.id
+      });
+      
+      if (error) throw error;
+      
+      toast("Submission received!", {
         description: "Thank you for contributing to our database. Your submission will be reviewed shortly.",
+        icon: <CheckCircle2 className="h-5 w-5 text-green-500" />,
       });
       
       // Reset form
-      (e.target as HTMLFormElement).reset();
-    }, 1500);
+      setFormData({
+        title: '',
+        author: '',
+        genre: '',
+        isbn: '',
+        smutLevel: '',
+        specificLocations: '',
+        notes: ''
+      });
+    } catch (error: any) {
+      toast("Submission Error", {
+        description: error.message || "There was an error submitting your contribution.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
+  if (loading) {
+    return (
+      <Layout>
+        <div className="container mx-auto py-12 px-4 text-center">
+          Loading...
+        </div>
+      </Layout>
+    );
+  }
+
+  if (!user) {
+    return null; // Will redirect in useEffect
+  }
 
   return (
     <Layout>
@@ -62,22 +137,45 @@ const Contribute = () => {
             <div className="grid grid-cols-1 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="title">Book Title <span className="text-red-500">*</span></Label>
-                <Input id="title" placeholder="Enter the full title of the book" required />
+                <Input 
+                  id="title" 
+                  placeholder="Enter the full title of the book" 
+                  value={formData.title}
+                  onChange={handleChange}
+                  required 
+                />
               </div>
               
               <div className="space-y-2">
                 <Label htmlFor="author">Author <span className="text-red-500">*</span></Label>
-                <Input id="author" placeholder="Enter the author's name" required />
+                <Input 
+                  id="author" 
+                  placeholder="Enter the author's name" 
+                  value={formData.author}
+                  onChange={handleChange}
+                  required 
+                />
               </div>
               
               <div className="space-y-2">
                 <Label htmlFor="genre">Genre <span className="text-red-500">*</span></Label>
-                <Input id="genre" placeholder="E.g., Romance, Fantasy, Young Adult, etc." required />
+                <Input 
+                  id="genre" 
+                  placeholder="E.g., Romance, Fantasy, Young Adult, etc." 
+                  value={formData.genre}
+                  onChange={handleChange}
+                  required 
+                />
               </div>
               
               <div className="space-y-2">
                 <Label htmlFor="isbn">ISBN (Optional)</Label>
-                <Input id="isbn" placeholder="Enter ISBN if available" />
+                <Input 
+                  id="isbn" 
+                  placeholder="Enter ISBN if available" 
+                  value={formData.isbn}
+                  onChange={handleChange}
+                />
                 <p className="text-xs text-muted-foreground">This helps us correctly identify the specific edition</p>
               </div>
             </div>
@@ -88,7 +186,12 @@ const Contribute = () => {
             
             <div className="space-y-3">
               <Label>Smut Level <span className="text-red-500">*</span></Label>
-              <RadioGroup defaultValue="none" required className="grid grid-cols-2 gap-4">
+              <RadioGroup 
+                value={formData.smutLevel} 
+                onValueChange={handleRadioChange}
+                required 
+                className="grid grid-cols-2 gap-4"
+              >
                 <div className="flex items-center space-x-2 border rounded-md p-3 hover:bg-muted/50 cursor-pointer">
                   <RadioGroupItem value="none" id="none" />
                   <Label htmlFor="none" className="cursor-pointer">None</Label>
@@ -109,11 +212,13 @@ const Contribute = () => {
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="locations">Specific Locations (Optional)</Label>
+              <Label htmlFor="specificLocations">Specific Locations (Optional)</Label>
               <Textarea 
-                id="locations" 
+                id="specificLocations" 
                 placeholder="List specific chapters or page numbers where explicit content occurs. Example: 'Chapter 7, pages 120-125', 'Chapter 15 (second half)'"
                 className="min-h-[100px]"
+                value={formData.specificLocations}
+                onChange={handleChange}
               />
             </div>
             
@@ -123,6 +228,8 @@ const Contribute = () => {
                 id="notes" 
                 placeholder="Provide any additional context that might be helpful for readers"
                 className="min-h-[100px]"
+                value={formData.notes}
+                onChange={handleChange}
               />
             </div>
           </div>

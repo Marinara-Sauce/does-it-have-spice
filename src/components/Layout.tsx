@@ -1,12 +1,25 @@
 
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { useAuth } from '@/hooks/useAuth';
+import { toast } from '@/components/ui/sonner';
+import { LogIn, LogOut, UserPlus } from 'lucide-react';
 
 interface LayoutProps {
   children: React.ReactNode;
 }
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    await signOut();
+    toast.success("Signed out successfully");
+    navigate('/');
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <header className="border-b">
@@ -14,8 +27,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           <Link to="/" className="text-2xl font-bold">
             <span className="gradient-text">Does It Have Smut?</span>
           </Link>
-          <nav>
-            <ul className="flex space-x-4">
+          <nav className="flex items-center">
+            <ul className="flex space-x-4 mr-4">
               <li>
                 <Link to="/" className="text-foreground hover:text-primary transition-colors">
                   Home
@@ -32,6 +45,29 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 </Link>
               </li>
             </ul>
+            <div className="flex gap-2">
+              {user ? (
+                <Button variant="outline" size="sm" onClick={handleSignOut}>
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Sign Out
+                </Button>
+              ) : (
+                <>
+                  <Button variant="outline" size="sm" asChild>
+                    <Link to="/auth?tab=login">
+                      <LogIn className="h-4 w-4 mr-2" />
+                      Login
+                    </Link>
+                  </Button>
+                  <Button size="sm" asChild>
+                    <Link to="/auth?tab=signup">
+                      <UserPlus className="h-4 w-4 mr-2" />
+                      Sign Up
+                    </Link>
+                  </Button>
+                </>
+              )}
+            </div>
           </nav>
         </div>
       </header>
