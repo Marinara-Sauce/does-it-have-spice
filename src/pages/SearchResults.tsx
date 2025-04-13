@@ -6,7 +6,17 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { BookOpen, AlertTriangle } from 'lucide-react';
-import { mockBooks } from '@/data/mockData';
+import { supabase } from '@/integrations/supabase/client';
+
+type Book = {
+  id: string;
+  title: string;
+  author: string;
+  genre: string;
+  smut_level: string;
+  specific_locations: string | null;
+  notes: string | null;
+};
 
 const SmutLevelBadge = ({ level }: { level: string }) => {
   const colors = {
@@ -17,7 +27,7 @@ const SmutLevelBadge = ({ level }: { level: string }) => {
   };
   
   return (
-    <span className={`px-2 py-1 rounded-full text-xs font-medium ${colors[level as keyof typeof colors]}`}>
+    <span className={`px-2 py-1 rounded-full text-xs font-medium ${colors[level as keyof typeof colors] || colors.none}`}>
       {level.charAt(0).toUpperCase() + level.slice(1)}
     </span>
   );
@@ -26,20 +36,35 @@ const SmutLevelBadge = ({ level }: { level: string }) => {
 const SearchResults = () => {
   const location = useLocation();
   const query = new URLSearchParams(location.search).get('q') || '';
-  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [searchResults, setSearchResults] = useState<Book[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate search API call with mockData
-    setIsLoading(true);
-    setTimeout(() => {
-      const results = mockBooks.filter(book => 
-        book.title.toLowerCase().includes(query.toLowerCase()) || 
-        book.author.toLowerCase().includes(query.toLowerCase())
-      );
-      setSearchResults(results);
+    const fetchBooks = async () => {
+      setIsLoading(true);
+      
+      // Search in both title and author fields
+      const { data, error } = await supabase
+        .from('books')
+        .select('*')
+        .or(`title.ilike.%${query}%,author.ilike.%${query}%`);
+      
+      if (error) {
+        console.error('Error fetching search results:', error);
+        setSearchResults([]);
+      } else {
+        setSearchResults(data || []);
+      }
+      
       setIsLoading(false);
-    }, 800); // Simulate loading delay
+    };
+
+    if (query) {
+      fetchBooks();
+    } else {
+      setSearchResults([]);
+      setIsLoading(false);
+    }
   }, [query]);
 
   return (
@@ -70,7 +95,7 @@ const SearchResults = () => {
                       <CardTitle className="line-clamp-1">{book.title}</CardTitle>
                       <CardDescription>by {book.author}</CardDescription>
                     </div>
-                    <SmutLevelBadge level={book.smutLevel} />
+                    <SmutLevelBadge level={book.smut_level} />
                   </div>
                 </CardHeader>
                 <CardContent>
@@ -78,19 +103,15 @@ const SearchResults = () => {
                     <BookOpen size={16} />
                     <span>{book.genre}</span>
                   </div>
-                  <p className="text-sm mb-3">{book.description}</p>
+                  <p className="text-sm mb-3">{book.notes || "No additional notes available."}</p>
                   
-                  {book.hasSmut && book.smutLocations && (
+                  {book.specific_locations && (
                     <div className="mt-4 p-3 bg-muted rounded-md">
                       <div className="flex gap-2 items-center mb-2 text-sm font-medium">
                         <AlertTriangle size={16} className="text-amber-500" />
                         <span>Content to avoid:</span>
                       </div>
-                      <ul className="text-sm space-y-1">
-                        {book.smutLocations.map((location: string, index: number) => (
-                          <li key={index}>{location}</li>
-                        ))}
-                      </ul>
+                      <p className="text-sm">{book.specific_locations}</p>
                     </div>
                   )}
                 </CardContent>

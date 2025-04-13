@@ -1,21 +1,19 @@
 
-import React, { useState, useEffect } from 'react';
+import { useState, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 import Layout from '@/components/Layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { toast } from '@/components/ui/sonner';
-import { AlertCircle, CheckCircle2, Shield } from 'lucide-react';
-import { useAuth } from '@/hooks/useAuth';
-import { supabase } from '@/integrations/supabase/client';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
 
 const Contribute = () => {
+  const { user } = useAuth();
   const navigate = useNavigate();
-  const { user, loading } = useAuth();
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     author: '',
@@ -25,40 +23,35 @@ const Contribute = () => {
     specificLocations: '',
     notes: ''
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Redirect to login if not authenticated
-  useEffect(() => {
-    if (!loading && !user) {
-      toast("Authentication Required", {
-        description: "Please sign in to contribute to our database.",
-        icon: <Shield className="h-5 w-5 text-blue-500" />,
-      });
-      navigate('/auth?tab=login');
-    }
-  }, [user, loading, navigate]);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { id, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [id]: value
-    }));
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleRadioChange = (value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      smutLevel: value
-    }));
+  const handleSelectChange = (value: string, name: string) => {
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
     
+    if (!user) {
+      toast.error("You must be logged in to contribute");
+      navigate('/auth?tab=login');
+      return;
+    }
+
+    if (!formData.title || !formData.author || !formData.genre || !formData.smutLevel) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
+
+    setIsSubmitting(true);
+
     try {
-      // Submit to Supabase
-      const { error } = await supabase.from('books').insert({
+      const { data, error } = await supabase.from('books').insert({
         title: formData.title,
         author: formData.author,
         genre: formData.genre,
@@ -66,17 +59,12 @@ const Contribute = () => {
         smut_level: formData.smutLevel,
         specific_locations: formData.specificLocations || null,
         notes: formData.notes || null,
-        created_by: user?.id
+        created_by: user.id
       });
       
       if (error) throw error;
       
-      toast("Submission received!", {
-        description: "Thank you for contributing to our database. Your submission will be reviewed shortly.",
-        icon: <CheckCircle2 className="h-5 w-5 text-green-500" />,
-      });
-      
-      // Reset form
+      toast.success("Thank you for your contribution!");
       setFormData({
         title: '',
         author: '',
@@ -86,160 +74,143 @@ const Contribute = () => {
         specificLocations: '',
         notes: ''
       });
+      
+      // Navigate to search results for the book just added
+      navigate(`/search?q=${encodeURIComponent(formData.title)}`);
+      
     } catch (error: any) {
-      toast("Submission Error", {
-        description: error.message || "There was an error submitting your contribution.",
-        variant: "destructive",
-      });
+      console.error('Error submitting form:', error);
+      toast.error(error.message || "Failed to submit your contribution");
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  if (loading) {
+  if (!user) {
     return (
       <Layout>
-        <div className="container mx-auto py-12 px-4 text-center">
-          Loading...
+        <div className="container mx-auto py-16 px-4 sm:px-6 text-center">
+          <h1 className="text-3xl font-bold mb-6">Contribute to Our Database</h1>
+          <p className="text-lg mb-8">Please log in to contribute to our database.</p>
+          <Button onClick={() => navigate('/auth?tab=login')}>
+            Log In to Contribute
+          </Button>
         </div>
       </Layout>
     );
   }
 
-  if (!user) {
-    return null; // Will redirect in useEffect
-  }
-
   return (
     <Layout>
-      <div className="container mx-auto py-12 px-4 sm:px-6 max-w-3xl">
-        <h1 className="text-4xl font-bold mb-4">Contribute</h1>
-        <p className="text-lg text-muted-foreground mb-8">
-          Help other readers by adding information about books you've read.
-        </p>
-
-        <div className="border rounded-lg p-6 mb-8 bg-card">
-          <div className="flex items-start gap-4 mb-4">
-            <AlertCircle className="h-6 w-6 text-amber-500 flex-shrink-0 mt-1" />
-            <div>
-              <h3 className="font-medium mb-1">Important Notes</h3>
-              <p className="text-sm text-muted-foreground">
-                Please provide accurate information based on the actual content of the book. We aim to be informative, not judgmental. All submissions are reviewed before being added to our database.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="space-y-4">
-            <h2 className="text-xl font-semibold">Book Information</h2>
-            
-            <div className="grid grid-cols-1 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="title">Book Title <span className="text-red-500">*</span></Label>
+      <div className="container mx-auto py-8 px-4 sm:px-6">
+        <div className="max-w-2xl mx-auto">
+          <h1 className="text-3xl font-bold mb-6">Contribute to Our Database</h1>
+          <p className="mb-8">
+            Help other readers by submitting information about book content. Your contributions make this resource valuable for the community.
+          </p>
+          
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="title">Book Title *</Label>
                 <Input 
                   id="title" 
-                  placeholder="Enter the full title of the book" 
-                  value={formData.title}
-                  onChange={handleChange}
+                  name="title" 
+                  value={formData.title} 
+                  onChange={handleInputChange} 
+                  placeholder="Enter the book title" 
                   required 
                 />
               </div>
               
-              <div className="space-y-2">
-                <Label htmlFor="author">Author <span className="text-red-500">*</span></Label>
+              <div>
+                <Label htmlFor="author">Author *</Label>
                 <Input 
                   id="author" 
+                  name="author" 
+                  value={formData.author} 
+                  onChange={handleInputChange} 
                   placeholder="Enter the author's name" 
-                  value={formData.author}
-                  onChange={handleChange}
                   required 
                 />
               </div>
               
-              <div className="space-y-2">
-                <Label htmlFor="genre">Genre <span className="text-red-500">*</span></Label>
+              <div>
+                <Label htmlFor="genre">Genre *</Label>
                 <Input 
                   id="genre" 
-                  placeholder="E.g., Romance, Fantasy, Young Adult, etc." 
-                  value={formData.genre}
-                  onChange={handleChange}
+                  name="genre" 
+                  value={formData.genre} 
+                  onChange={handleInputChange} 
+                  placeholder="E.g., Fantasy, Romance, Mystery" 
                   required 
                 />
               </div>
               
-              <div className="space-y-2">
-                <Label htmlFor="isbn">ISBN (Optional)</Label>
+              <div>
+                <Label htmlFor="isbn">ISBN (optional)</Label>
                 <Input 
                   id="isbn" 
+                  name="isbn" 
+                  value={formData.isbn} 
+                  onChange={handleInputChange} 
                   placeholder="Enter ISBN if available" 
-                  value={formData.isbn}
-                  onChange={handleChange}
                 />
-                <p className="text-xs text-muted-foreground">This helps us correctly identify the specific edition</p>
+              </div>
+              
+              <div>
+                <Label htmlFor="smutLevel">Adult Content Level *</Label>
+                <Select 
+                  value={formData.smutLevel} 
+                  onValueChange={(value) => handleSelectChange(value, 'smutLevel')}
+                  required
+                >
+                  <SelectTrigger id="smutLevel">
+                    <SelectValue placeholder="Select content level" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">None - No adult content</SelectItem>
+                    <SelectItem value="mild">Mild - Some suggestive content</SelectItem>
+                    <SelectItem value="moderate">Moderate - Some explicit scenes</SelectItem>
+                    <SelectItem value="explicit">Explicit - Frequent or detailed adult content</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <Label htmlFor="specificLocations">
+                  Specific Locations (optional)
+                </Label>
+                <Textarea 
+                  id="specificLocations" 
+                  name="specificLocations" 
+                  value={formData.specificLocations} 
+                  onChange={handleInputChange} 
+                  placeholder="E.g., 'Chapter 7, pages 120-123' or 'Chapters 15 and 18'" 
+                  className="min-h-[100px]"
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="notes">
+                  Additional Notes (optional)
+                </Label>
+                <Textarea 
+                  id="notes" 
+                  name="notes" 
+                  value={formData.notes} 
+                  onChange={handleInputChange} 
+                  placeholder="Any other relevant information about the book's content" 
+                  className="min-h-[100px]"
+                />
               </div>
             </div>
-          </div>
-
-          <div className="space-y-4">
-            <h2 className="text-xl font-semibold">Content Assessment</h2>
             
-            <div className="space-y-3">
-              <Label>Smut Level <span className="text-red-500">*</span></Label>
-              <RadioGroup 
-                value={formData.smutLevel} 
-                onValueChange={handleRadioChange}
-                required 
-                className="grid grid-cols-2 gap-4"
-              >
-                <div className="flex items-center space-x-2 border rounded-md p-3 hover:bg-muted/50 cursor-pointer">
-                  <RadioGroupItem value="none" id="none" />
-                  <Label htmlFor="none" className="cursor-pointer">None</Label>
-                </div>
-                <div className="flex items-center space-x-2 border rounded-md p-3 hover:bg-muted/50 cursor-pointer">
-                  <RadioGroupItem value="mild" id="mild" />
-                  <Label htmlFor="mild" className="cursor-pointer">Mild</Label>
-                </div>
-                <div className="flex items-center space-x-2 border rounded-md p-3 hover:bg-muted/50 cursor-pointer">
-                  <RadioGroupItem value="moderate" id="moderate" />
-                  <Label htmlFor="moderate" className="cursor-pointer">Moderate</Label>
-                </div>
-                <div className="flex items-center space-x-2 border rounded-md p-3 hover:bg-muted/50 cursor-pointer">
-                  <RadioGroupItem value="explicit" id="explicit" />
-                  <Label htmlFor="explicit" className="cursor-pointer">Explicit</Label>
-                </div>
-              </RadioGroup>
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="specificLocations">Specific Locations (Optional)</Label>
-              <Textarea 
-                id="specificLocations" 
-                placeholder="List specific chapters or page numbers where explicit content occurs. Example: 'Chapter 7, pages 120-125', 'Chapter 15 (second half)'"
-                className="min-h-[100px]"
-                value={formData.specificLocations}
-                onChange={handleChange}
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="notes">Additional Notes (Optional)</Label>
-              <Textarea 
-                id="notes" 
-                placeholder="Provide any additional context that might be helpful for readers"
-                className="min-h-[100px]"
-                value={formData.notes}
-                onChange={handleChange}
-              />
-            </div>
-          </div>
-
-          <div className="pt-4">
-            <Button type="submit" className="w-full sm:w-auto" disabled={isSubmitting}>
-              {isSubmitting ? "Submitting..." : "Submit Book Information"}
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
+              {isSubmitting ? 'Submitting...' : 'Submit Contribution'}
             </Button>
-          </div>
-        </form>
+          </form>
+        </div>
       </div>
     </Layout>
   );

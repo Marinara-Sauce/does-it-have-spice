@@ -3,8 +3,9 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
-import { toast } from '@/components/ui/sonner';
+import { toast } from 'sonner';
 import { LogIn, LogOut, UserPlus } from 'lucide-react';
+import SearchBar from '@/components/SearchBar';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -23,11 +24,16 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   return (
     <div className="min-h-screen flex flex-col">
       <header className="border-b">
-        <div className="container mx-auto py-4 px-4 sm:px-6 flex justify-between items-center">
+        <div className="container mx-auto py-4 px-4 sm:px-6 flex flex-col md:flex-row gap-4 md:gap-0 md:justify-between md:items-center">
           <Link to="/" className="text-2xl font-bold">
             <span className="gradient-text">Does It Have Smut?</span>
           </Link>
-          <nav className="flex items-center">
+          
+          <div className="w-full md:w-auto md:max-w-md">
+            <SearchBar className="w-full" />
+          </div>
+          
+          <nav className="flex items-center justify-between md:justify-end w-full md:w-auto">
             <ul className="flex space-x-4 mr-4">
               <li>
                 <Link to="/" className="text-foreground hover:text-primary transition-colors">

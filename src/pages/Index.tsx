@@ -1,22 +1,8 @@
 
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Search } from 'lucide-react';
+import React from 'react';
 import Layout from '@/components/Layout';
 
 const Index = () => {
-  const [searchQuery, setSearchQuery] = useState('');
-  const navigate = useNavigate();
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
-    }
-  };
-
   return (
     <Layout>
       <div className="flex flex-col items-center justify-center min-h-[80vh] px-4 sm:px-6">
@@ -27,22 +13,6 @@ const Index = () => {
           <p className="text-xl text-muted-foreground mb-8">
             Find out if a book contains adult content and which pages to avoid if needed.
           </p>
-          
-          <form onSubmit={handleSearch} className="w-full max-w-xl mx-auto flex flex-col sm:flex-row gap-2">
-            <div className="relative flex-grow">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={20} />
-              <Input
-                type="text"
-                placeholder="Search for a book by title or author..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 w-full"
-              />
-            </div>
-            <Button type="submit" className="bg-primary hover:bg-primary/90">
-              Search
-            </Button>
-          </form>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-6xl">
