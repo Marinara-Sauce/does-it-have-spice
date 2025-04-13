@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
@@ -15,6 +15,7 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const { user, signOut } = useAuth();
+  const location = useLocation();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
 
@@ -24,6 +25,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     navigate('/');
   };
 
+  console.log(location);
+
   return (
     <div className="min-h-screen flex flex-col">
       <header className="border-b">
@@ -31,14 +34,24 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           <div className="flex items-center gap-2">
             {isMobile && <MobileNav />}
             
+            {!isMobile && 
+              <Link to="/" className="text-2xl font-bold">
+                <span className="gradient-text">Does It Have Smut?</span>
+              </Link>
+            }
+          </div>
+          
+          {location.pathname !== '/' ? 
+            <div className="flex-1 flex justify-center max-w-md mx-4">
+              <SearchBar className="w-full" />
+            </div>
+          : null}
+
+          {location.pathname === '/' && isMobile ? (
             <Link to="/" className="text-2xl font-bold">
               <span className="gradient-text">Does It Have Smut?</span>
             </Link>
-          </div>
-          
-          <div className="flex-1 flex justify-center max-w-md mx-4">
-            <SearchBar className="w-full" />
-          </div>
+          ) : null}
           
           {!isMobile && (
             <nav className="hidden md:flex items-center">

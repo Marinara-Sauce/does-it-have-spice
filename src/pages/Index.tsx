@@ -1,6 +1,5 @@
-
-import React from 'react';
 import Layout from '@/components/Layout';
+import SearchBar from '@/components/SearchBar';
 
 const Index = () => {
   return (
@@ -13,6 +12,7 @@ const Index = () => {
           <p className="text-xl text-muted-foreground mb-8">
             Find out if a book contains adult content and which pages to avoid if needed.
           </p>
+          <SearchBar />
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-6xl">
