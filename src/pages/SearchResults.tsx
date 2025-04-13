@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import Layout from '@/components/Layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -35,6 +35,7 @@ const SmutLevelBadge = ({ level }: { level: string }) => {
 
 const SearchResults = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const query = new URLSearchParams(location.search).get('q') || '';
   const [searchResults, setSearchResults] = useState<Book[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -67,6 +68,10 @@ const SearchResults = () => {
     }
   }, [query]);
 
+  const handleViewDetails = (bookId: string) => {
+    navigate(`/book/${bookId}`);
+  };
+
   return (
     <Layout>
       <div className="container mx-auto py-8 px-4 sm:px-6">
@@ -88,7 +93,11 @@ const SearchResults = () => {
         ) : searchResults.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {searchResults.map((book) => (
-              <Card key={book.id} className="overflow-hidden hover:shadow-md transition-shadow">
+              <Card 
+                key={book.id} 
+                className="overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
+                onClick={() => handleViewDetails(book.id)}
+              >
                 <CardHeader className="pb-2">
                   <div className="flex justify-between items-start">
                     <div>
@@ -103,7 +112,7 @@ const SearchResults = () => {
                     <BookOpen size={16} />
                     <span>{book.genre}</span>
                   </div>
-                  <p className="text-sm mb-3">{book.notes || "No additional notes available."}</p>
+                  <p className="text-sm mb-3 line-clamp-2">{book.notes || "No additional notes available."}</p>
                   
                   {book.specific_locations && (
                     <div className="mt-4 p-3 bg-muted rounded-md">
@@ -111,7 +120,7 @@ const SearchResults = () => {
                         <AlertTriangle size={16} className="text-amber-500" />
                         <span>Content to avoid:</span>
                       </div>
-                      <p className="text-sm">{book.specific_locations}</p>
+                      <p className="text-sm line-clamp-2">{book.specific_locations}</p>
                     </div>
                   )}
                 </CardContent>
