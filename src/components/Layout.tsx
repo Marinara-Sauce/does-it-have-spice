@@ -6,6 +6,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { LogIn, LogOut, UserPlus } from 'lucide-react';
 import SearchBar from '@/components/SearchBar';
+import MobileNav from '@/components/MobileNav';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -14,6 +16,7 @@ interface LayoutProps {
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
 
   const handleSignOut = async () => {
     await signOut();
@@ -24,57 +27,63 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   return (
     <div className="min-h-screen flex flex-col">
       <header className="border-b">
-        <div className="container mx-auto py-4 px-4 sm:px-6 flex flex-col md:flex-row gap-4 md:gap-0 md:justify-between md:items-center">
-          <Link to="/" className="text-2xl font-bold">
-            <span className="gradient-text">Does It Have Smut?</span>
-          </Link>
+        <div className="container mx-auto py-4 px-4 sm:px-6 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            {isMobile && <MobileNav />}
+            
+            <Link to="/" className="text-2xl font-bold">
+              <span className="gradient-text">Does It Have Smut?</span>
+            </Link>
+          </div>
           
-          <div className="w-full md:w-auto md:max-w-md">
+          <div className="flex-1 flex justify-center max-w-md mx-4">
             <SearchBar className="w-full" />
           </div>
           
-          <nav className="flex items-center justify-between md:justify-end w-full md:w-auto">
-            <ul className="flex space-x-4 mr-4">
-              <li>
-                <Link to="/" className="text-foreground hover:text-primary transition-colors">
-                  Home
-                </Link>
-              </li>
-              <li>
-                <Link to="/about" className="text-foreground hover:text-primary transition-colors">
-                  About
-                </Link>
-              </li>
-              <li>
-                <Link to="/contribute" className="text-foreground hover:text-primary transition-colors">
-                  Contribute
-                </Link>
-              </li>
-            </ul>
-            <div className="flex gap-2">
-              {user ? (
-                <Button variant="outline" size="sm" onClick={handleSignOut}>
-                  <LogOut className="h-4 w-4 mr-2" />
-                  Sign Out
-                </Button>
-              ) : (
-                <>
-                  <Button variant="outline" size="sm" asChild>
-                    <Link to="/auth?tab=login">
-                      <LogIn className="h-4 w-4 mr-2" />
-                      Login
-                    </Link>
+          {!isMobile && (
+            <nav className="hidden md:flex items-center">
+              <ul className="flex space-x-4 mr-4">
+                <li>
+                  <Link to="/" className="text-foreground hover:text-primary transition-colors">
+                    Home
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/about" className="text-foreground hover:text-primary transition-colors">
+                    About
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/contribute" className="text-foreground hover:text-primary transition-colors">
+                    Contribute
+                  </Link>
+                </li>
+              </ul>
+              <div className="flex gap-2">
+                {user ? (
+                  <Button variant="outline" size="sm" onClick={handleSignOut}>
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Sign Out
                   </Button>
-                  <Button size="sm" asChild>
-                    <Link to="/auth?tab=signup">
-                      <UserPlus className="h-4 w-4 mr-2" />
-                      Sign Up
-                    </Link>
-                  </Button>
-                </>
-              )}
-            </div>
-          </nav>
+                ) : (
+                  <>
+                    <Button variant="outline" size="sm" asChild>
+                      <Link to="/auth?tab=login">
+                        <LogIn className="h-4 w-4 mr-2" />
+                        Login
+                      </Link>
+                    </Button>
+                    <Button size="sm" asChild>
+                      <Link to="/auth?tab=signup">
+                        <UserPlus className="h-4 w-4 mr-2" />
+                        Sign Up
+                      </Link>
+                    </Button>
+                  </>
+                )}
+              </div>
+            </nav>
+          )}
         </div>
       </header>
       <main className="flex-grow">
