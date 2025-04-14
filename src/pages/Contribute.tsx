@@ -10,6 +10,8 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import SmutLevelCard from '@/components/SmutLevelCard';
 
 const Contribute = () => {
   const { user } = useAuth();
@@ -78,9 +80,13 @@ const Contribute = () => {
       // Navigate to search results for the book just added
       navigate(`/search?q=${encodeURIComponent(formData.title)}`);
       
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error submitting form:', error);
-      toast.error(error.message || "Failed to submit your contribution");
+      if (error instanceof Error) {
+        toast.error(error.message || "Failed to submit your contribution");
+      } else {
+        toast.error("An unknown error occurred");
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -160,21 +166,42 @@ const Contribute = () => {
               
               <div>
                 <Label htmlFor="smutLevel">Adult Content Level *</Label>
-                <Select 
-                  value={formData.smutLevel} 
-                  onValueChange={(value) => handleSelectChange(value, 'smutLevel')}
-                  required
-                >
-                  <SelectTrigger id="smutLevel">
-                    <SelectValue placeholder="Select content level" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">None - No adult content</SelectItem>
-                    <SelectItem value="mild">Mild - Some suggestive content</SelectItem>
-                    <SelectItem value="moderate">Moderate - Some explicit scenes</SelectItem>
-                    <SelectItem value="explicit">Explicit - Frequent or detailed adult content</SelectItem>
-                  </SelectContent>
-                </Select>
+                <RadioGroup onValueChange={(value) => handleSelectChange(value, 'smutLevel')}>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <SmutLevelCard
+                      title="None"
+                      description="No explicit sexual content. May contain romance, kissing, or implied intimacy."
+                      color="text-green-600"
+                      isSelectable
+                      selected={formData.smutLevel === 'none'}
+                      value="none"
+                    />
+                    <SmutLevelCard
+                      title="Mild"
+                      description="Contains some sensual scenes, but without explicit details. 'Closed door' or fade-to-black scenes."
+                      color="text-blue-600"
+                      isSelectable
+                      selected={formData.smutLevel === 'mild'}
+                      value="mild"
+                    />
+                    <SmutLevelCard
+                      title="Moderate"
+                      description="Includes explicit scenes but not overly graphic. May contain some strong language."
+                      color="text-yellow-600"
+                      isSelectable
+                      selected={formData.smutLevel === 'moderate'}
+                      value="moderate"
+                    />
+                    <SmutLevelCard
+                      title="Explicit"
+                      description="Frequent and detailed sexual content. May include graphic language and situations."
+                      color="text-red-600"
+                      isSelectable
+                      selected={formData.smutLevel === 'explicit'}
+                      value="explicit"
+                    />
+                  </div>
+                </RadioGroup>
               </div>
               
               <div>

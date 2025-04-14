@@ -25,8 +25,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     navigate('/');
   };
 
-  console.log(location);
-
   return (
     <div className="min-h-screen flex flex-col">
       <header className="border-b">
