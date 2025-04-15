@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Layout from '@/components/Layout';
@@ -12,7 +11,6 @@ type Book = {
   id: string;
   title: string;
   author: string;
-  genre: string;
   smut_level: string;
   specific_locations: string | null;
   notes: string | null;
@@ -105,7 +103,7 @@ const SearchResults = () => {
                       <CardTitle className="line-clamp-1">{book.title}</CardTitle>
                       <CardDescription>by {book.author}</CardDescription>
                     </div>
-                    <SmutLevelBadge level={book.smut_level} />
+                    <SmutLevelBadge level={book.smut_level || 'none'} />
                   </div>
                 </CardHeader>
                 <CardContent>
@@ -113,13 +111,6 @@ const SearchResults = () => {
                     <Users size={16} className="text-muted-foreground" />
                     <span>{book.contribution_count} contribution{book.contribution_count !== 1 ? 's' : ''}</span>
                   </div>
-                  
-                  {book.genre && (
-                    <div className="flex items-center gap-2 text-sm mb-4">
-                      <BookOpen size={16} />
-                      <span>{book.genre}</span>
-                    </div>
-                  )}
                   
                   <p className="text-sm mb-3 line-clamp-2">{book.notes || "No additional notes available."}</p>
                   

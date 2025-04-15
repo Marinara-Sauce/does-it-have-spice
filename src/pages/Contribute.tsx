@@ -98,7 +98,7 @@ const Contribute = () => {
             `Pages ${loc.startPage}${loc.endPage !== loc.startPage ? '-'+loc.endPage : ''}`
           ).join('; ')
         : null;
-        
+
       const { data, error } = await supabase.from('books').insert({
         title: formData.title,
         author: formData.author,

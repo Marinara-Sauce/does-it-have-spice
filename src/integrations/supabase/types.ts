@@ -21,7 +21,7 @@ export type Database = {
           smut_level: string
           specific_locations: string | null
           title: string
-          unique_book_id: string
+          unique_book_id: string | null
         }
         Insert: {
           author: string
@@ -34,7 +34,7 @@ export type Database = {
           smut_level: string
           specific_locations?: string | null
           title: string
-          unique_book_id: string
+          unique_book_id?: string | null
         }
         Update: {
           author?: string
@@ -47,24 +47,9 @@ export type Database = {
           smut_level?: string
           specific_locations?: string | null
           title?: string
-          unique_book_id?: string
+          unique_book_id?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "books_unique_book_id_fkey"
-            columns: ["unique_book_id"]
-            isOneToOne: false
-            referencedRelation: "aggregated_books"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "books_unique_book_id_fkey"
-            columns: ["unique_book_id"]
-            isOneToOne: false
-            referencedRelation: "unique_books"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       profiles: {
         Row: {
@@ -87,30 +72,6 @@ export type Database = {
         }
         Relationships: []
       }
-      unique_books: {
-        Row: {
-          author: string
-          created_at: string
-          id: string
-          isbn: string | null
-          title: string
-        }
-        Insert: {
-          author: string
-          created_at?: string
-          id?: string
-          isbn?: string | null
-          title: string
-        }
-        Update: {
-          author?: string
-          created_at?: string
-          id?: string
-          isbn?: string | null
-          title?: string
-        }
-        Relationships: []
-      }
     }
     Views: {
       aggregated_books: {
@@ -123,6 +84,16 @@ export type Database = {
           notes: string | null
           smut_level: string | null
           specific_locations: string | null
+          title: string | null
+        }
+        Relationships: []
+      }
+      unique_books: {
+        Row: {
+          author: string | null
+          created_at: string | null
+          id: string | null
+          isbn: string | null
           title: string | null
         }
         Relationships: []
