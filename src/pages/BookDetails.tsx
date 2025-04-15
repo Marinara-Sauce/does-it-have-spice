@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Layout from '@/components/Layout';
@@ -12,14 +13,17 @@ type Book = {
   id: string;
   title: string;
   author: string;
-  genre: string;
+  genre?: string;
   smut_level: string;
   specific_locations: string | null;
   notes: string | null;
   isbn: string | null;
+  contribution_count?: number;
 };
 
 const SmutLevelBadge = ({ level }: { level: string }) => {
+  const normalizedLevel = level?.toLowerCase() || 'none';
+  
   const colors = {
     none: "bg-green-100 text-green-800",
     mild: "bg-blue-100 text-blue-800",
@@ -28,8 +32,8 @@ const SmutLevelBadge = ({ level }: { level: string }) => {
   };
   
   return (
-    <span className={`px-2 py-1 rounded-full text-xs font-medium ${colors[level as keyof typeof colors] || colors.none}`}>
-      {level.charAt(0).toUpperCase() + level.slice(1)}
+    <span className={`px-2 py-1 rounded-full text-xs font-medium ${colors[normalizedLevel as keyof typeof colors] || colors.none}`}>
+      {normalizedLevel.charAt(0).toUpperCase() + normalizedLevel.slice(1)}
     </span>
   );
 };
@@ -47,18 +51,22 @@ const BookDetails = () => {
       setIsLoading(true);
       
       try {
+        // Query from aggregated_books view instead of books table
         const { data, error } = await supabase
-          .from('books')
+          .from('aggregated_books')
           .select('*')
           .eq('id', id)
-          .single();
+          .maybeSingle(); // Use maybeSingle() instead of single() to avoid errors when no rows are found
         
         if (error) {
           console.error('Error fetching book details:', error);
           toast.error('Failed to load book details');
           setBook(null);
-        } else {
+        } else if (data) {
           setBook(data);
+        } else {
+          console.log('No book found with ID:', id);
+          setBook(null);
         }
       } catch (error) {
         console.error('Exception fetching book details:', error);
@@ -110,11 +118,21 @@ const BookDetails = () => {
                     <div className="mb-6">
                       <h3 className="text-lg font-medium mb-2">Book Information</h3>
                       <div className="space-y-2">
-                        <div className="flex items-center gap-2 text-sm">
-                          <BookOpen size={16} className="text-muted-foreground" />
-                          <span className="font-medium">Genre:</span> 
-                          <span>{book.genre}</span>
-                        </div>
+                        {book.genre && (
+                          <div className="flex items-center gap-2 text-sm">
+                            <BookOpen size={16} className="text-muted-foreground" />
+                            <span className="font-medium">Genre:</span> 
+                            <span>{book.genre}</span>
+                          </div>
+                        )}
+                        
+                        {book.contribution_count && (
+                          <div className="flex items-center gap-2 text-sm">
+                            <BookOpen size={16} className="text-muted-foreground" />
+                            <span className="font-medium">Contributions:</span> 
+                            <span>{book.contribution_count}</span>
+                          </div>
+                        )}
                         
                         {book.isbn && (
                           <div className="flex items-center gap-2 text-sm">
