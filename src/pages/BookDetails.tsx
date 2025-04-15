@@ -1,13 +1,12 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Layout from '@/components/Layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { BookOpen, AlertTriangle, ChevronLeft, BookText } from 'lucide-react';
+import { BookOpen, ChevronLeft, BookText } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import ContentWarningList from '@/components/ContentWarningList';
 
 type Book = {
   id: string;
@@ -149,15 +148,7 @@ const BookDetails = () => {
                       </p>
                     </div>
                     
-                    {book.specific_locations && (
-                      <div className="p-4 bg-muted rounded-md">
-                        <div className="flex gap-2 items-center mb-2">
-                          <AlertTriangle size={16} className="text-amber-500" />
-                          <h3 className="text-lg font-medium">Content to avoid:</h3>
-                        </div>
-                        <p className="text-sm whitespace-pre-line">{book.specific_locations}</p>
-                      </div>
-                    )}
+                    {book.specific_locations && <ContentWarningList locations={book.specific_locations} />}
                   </div>
                 </div>
               </CardContent>

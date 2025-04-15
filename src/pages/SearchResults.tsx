@@ -1,13 +1,12 @@
-
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Layout from '@/components/Layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { BookOpen, AlertTriangle, Users } from 'lucide-react';
+import { Users } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import ContentWarningList from '@/components/ContentWarningList';
 
 type Book = {
   id: string;
@@ -125,15 +124,7 @@ const SearchResults = () => {
                   
                   <p className="text-sm mb-3 line-clamp-2">{book.notes || "No additional notes available."}</p>
                   
-                  {book.specific_locations && (
-                    <div className="mt-4 p-3 bg-muted rounded-md">
-                      <div className="flex gap-2 items-center mb-2 text-sm font-medium">
-                        <AlertTriangle size={16} className="text-amber-500" />
-                        <span>Content to avoid:</span>
-                      </div>
-                      <p className="text-sm line-clamp-2">{book.specific_locations}</p>
-                    </div>
-                  )}
+                  {book.specific_locations && <ContentWarningList locations={book.specific_locations} />}
                 </CardContent>
                 <CardFooter>
                   <Button variant="outline" className="w-full">View Details</Button>
