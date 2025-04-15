@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Layout from '@/components/Layout';
@@ -6,6 +7,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Badge } from '@/components/ui/badge';
 import { BookOpen, AlertTriangle, Users } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 type Book = {
   id: string;
@@ -19,6 +21,8 @@ type Book = {
 };
 
 const SmutLevelBadge = ({ level }: { level: string }) => {
+  const normalizedLevel = level?.toLowerCase() || 'none';
+  
   const colors = {
     none: "bg-green-100 text-green-800",
     mild: "bg-blue-100 text-blue-800",
@@ -27,8 +31,8 @@ const SmutLevelBadge = ({ level }: { level: string }) => {
   };
   
   return (
-    <span className={`px-2 py-1 rounded-full text-xs font-medium ${colors[level as keyof typeof colors] || colors.none}`}>
-      {level.charAt(0).toUpperCase() + level.slice(1)}
+    <span className={`px-2 py-1 rounded-full text-xs font-medium ${colors[normalizedLevel as keyof typeof colors] || colors.none}`}>
+      {normalizedLevel.charAt(0).toUpperCase() + normalizedLevel.slice(1)}
     </span>
   );
 };
@@ -44,19 +48,26 @@ const SearchResults = () => {
     const fetchBooks = async () => {
       setIsLoading(true);
       
-      const { data, error } = await supabase
-        .from('aggregated_books')
-        .select('*')
-        .or(`title.ilike.%${query}%,author.ilike.%${query}%`);
-      
-      if (error) {
-        console.error('Error fetching search results:', error);
+      try {
+        const { data, error } = await supabase
+          .from('aggregated_books')
+          .select('*')
+          .or(`title.ilike.%${query}%,author.ilike.%${query}%`);
+        
+        if (error) {
+          console.error('Error fetching search results:', error);
+          toast.error('Error fetching search results');
+          setSearchResults([]);
+        } else {
+          setSearchResults(data || []);
+        }
+      } catch (err) {
+        console.error('Unexpected error:', err);
+        toast.error('An unexpected error occurred');
         setSearchResults([]);
-      } else {
-        setSearchResults(data || []);
+      } finally {
+        setIsLoading(false);
       }
-      
-      setIsLoading(false);
     };
 
     if (query) {
@@ -103,7 +114,7 @@ const SearchResults = () => {
                       <CardTitle className="line-clamp-1">{book.title}</CardTitle>
                       <CardDescription>by {book.author}</CardDescription>
                     </div>
-                    <SmutLevelBadge level={book.smut_level || 'none'} />
+                    <SmutLevelBadge level={book.smut_level} />
                   </div>
                 </CardHeader>
                 <CardContent>
