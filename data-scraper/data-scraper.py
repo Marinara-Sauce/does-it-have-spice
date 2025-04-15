@@ -84,7 +84,10 @@ def parse_response(response):
 # === INSERT INTO SUPABASE ===
 def insert_into_supabase(title, author, genre_list, isbn, smut_level, specific_locations):
     genre = ", ".join(genre_list[:3]) if genre_list else "Unknown"
-    isbn = isbn or "Unknown"
+    isbn = isbn or None
+    
+    if specific_locations == "Unknown":
+        specific_locations = None
     
     result = supabase.table("books").insert({
         "title": title,
@@ -98,7 +101,7 @@ def insert_into_supabase(title, author, genre_list, isbn, smut_level, specific_l
     print("✅ Uploaded to Supabase:", result.data)
 
 # === MAIN ===
-def main(subject="horror", count=100):
+def main(subject="mystery", count=100):
     all_books = fetch_books(subject, limit=200)
     added = 0
     attempts = 0
