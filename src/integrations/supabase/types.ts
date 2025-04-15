@@ -21,6 +21,7 @@ export type Database = {
           smut_level: string
           specific_locations: string | null
           title: string
+          unique_book_id: string
         }
         Insert: {
           author: string
@@ -33,6 +34,7 @@ export type Database = {
           smut_level: string
           specific_locations?: string | null
           title: string
+          unique_book_id: string
         }
         Update: {
           author?: string
@@ -45,8 +47,24 @@ export type Database = {
           smut_level?: string
           specific_locations?: string | null
           title?: string
+          unique_book_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "books_unique_book_id_fkey"
+            columns: ["unique_book_id"]
+            isOneToOne: false
+            referencedRelation: "aggregated_books"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "books_unique_book_id_fkey"
+            columns: ["unique_book_id"]
+            isOneToOne: false
+            referencedRelation: "unique_books"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -69,12 +87,52 @@ export type Database = {
         }
         Relationships: []
       }
+      unique_books: {
+        Row: {
+          author: string
+          created_at: string
+          id: string
+          isbn: string | null
+          title: string
+        }
+        Insert: {
+          author: string
+          created_at?: string
+          id?: string
+          isbn?: string | null
+          title: string
+        }
+        Update: {
+          author?: string
+          created_at?: string
+          id?: string
+          isbn?: string | null
+          title?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
-      [_ in never]: never
+      aggregated_books: {
+        Row: {
+          author: string | null
+          contribution_count: number | null
+          created_at: string | null
+          id: string | null
+          isbn: string | null
+          notes: string | null
+          smut_level: string | null
+          specific_locations: string | null
+          title: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
-      [_ in never]: never
+      get_most_common_smut_level: {
+        Args: { book_id: string }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never

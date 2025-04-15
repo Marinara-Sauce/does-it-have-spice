@@ -5,7 +5,7 @@ import Layout from '@/components/Layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { BookOpen, AlertTriangle } from 'lucide-react';
+import { BookOpen, AlertTriangle, Users } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 type Book = {
@@ -16,6 +16,8 @@ type Book = {
   smut_level: string;
   specific_locations: string | null;
   notes: string | null;
+  isbn: string | null;
+  contribution_count: number;
 };
 
 const SmutLevelBadge = ({ level }: { level: string }) => {
@@ -44,9 +46,8 @@ const SearchResults = () => {
     const fetchBooks = async () => {
       setIsLoading(true);
       
-      // Search in both title and author fields
       const { data, error } = await supabase
-        .from('books')
+        .from('aggregated_books')
         .select('*')
         .or(`title.ilike.%${query}%,author.ilike.%${query}%`);
       
@@ -108,10 +109,18 @@ const SearchResults = () => {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="flex items-center gap-2 text-sm mb-4">
-                    <BookOpen size={16} />
-                    <span>{book.genre}</span>
+                  <div className="flex items-center gap-2 text-sm mb-2">
+                    <Users size={16} className="text-muted-foreground" />
+                    <span>{book.contribution_count} contribution{book.contribution_count !== 1 ? 's' : ''}</span>
                   </div>
+                  
+                  {book.genre && (
+                    <div className="flex items-center gap-2 text-sm mb-4">
+                      <BookOpen size={16} />
+                      <span>{book.genre}</span>
+                    </div>
+                  )}
+                  
                   <p className="text-sm mb-3 line-clamp-2">{book.notes || "No additional notes available."}</p>
                   
                   {book.specific_locations && (
