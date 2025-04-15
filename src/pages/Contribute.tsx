@@ -13,6 +13,13 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import SmutLevelCard from '@/components/SmutLevelCard';
 
+interface Location {
+  startChapter: string;
+  endChapter: string;
+  startPage: string;
+  endPage: string;
+}
+
 const Contribute = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -22,7 +29,7 @@ const Contribute = () => {
     genre: '',
     isbn: '',
     smutLevel: '',
-    specificLocations: '',
+    specificLocations: [],
     notes: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -34,6 +41,37 @@ const Contribute = () => {
 
   const handleSelectChange = (value: string, name: string) => {
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+   // Add a new empty location row
+   const addLocation = () => {
+    setFormData(prev => ({
+      ...prev,
+      specificLocations: [...prev.specificLocations, { startChapter: '', endChapter: '', startPage: '', endPage: '' }]
+    }));
+  };
+
+  // Remove a location at the specified index
+  const removeLocation = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      specificLocations: prev.specificLocations.filter((_, i) => i !== index)
+    }));
+  };
+
+  // Update a specific field in a location
+  const handleLocationChange = (index: number, field: keyof Location, value: string) => {
+    setFormData(prev => {
+      const newLocations = [...prev.specificLocations];
+      newLocations[index] = {
+        ...newLocations[index],
+        [field]: value
+      };
+      return {
+        ...prev,
+        specificLocations: newLocations
+      };
+    });
   };
 
   const handleSubmit = async (e: FormEvent) => {
@@ -53,13 +91,21 @@ const Contribute = () => {
     setIsSubmitting(true);
 
     try {
+      // Format the locations into a string for storage
+      const formattedLocations = formData.specificLocations.length > 0
+        ? formData.specificLocations.map(loc => 
+            `Chapters ${loc.startChapter}${loc.endChapter !== loc.startChapter ? '-'+loc.endChapter : ''}, ` +
+            `Pages ${loc.startPage}${loc.endPage !== loc.startPage ? '-'+loc.endPage : ''}`
+          ).join('; ')
+        : null;
+        
       const { data, error } = await supabase.from('books').insert({
         title: formData.title,
         author: formData.author,
         genre: formData.genre,
         isbn: formData.isbn || null,
         smut_level: formData.smutLevel,
-        specific_locations: formData.specificLocations || null,
+        specific_locations: formattedLocations,
         notes: formData.notes || null,
         created_by: user.id
       });
@@ -73,7 +119,7 @@ const Contribute = () => {
         genre: '',
         isbn: '',
         smutLevel: '',
-        specificLocations: '',
+        specificLocations: [],
         notes: ''
       });
       
@@ -186,7 +232,7 @@ const Contribute = () => {
                     />
                     <SmutLevelCard
                       title="Moderate"
-                      description="Includes explicit scenes but not overly graphic. May contain some strong language."
+                      description="Includes explicit scenes but not overly graphic."
                       color="text-yellow-600"
                       isSelectable
                       selected={formData.smutLevel === 'moderate'}
@@ -194,7 +240,7 @@ const Contribute = () => {
                     />
                     <SmutLevelCard
                       title="Explicit"
-                      description="Frequent and detailed sexual content. May include graphic language and situations."
+                      description="Frequent and detailed sexual content."
                       color="text-red-600"
                       isSelectable
                       selected={formData.smutLevel === 'explicit'}
@@ -208,14 +254,96 @@ const Contribute = () => {
                 <Label htmlFor="specificLocations">
                   Specific Locations (optional)
                 </Label>
-                <Textarea 
-                  id="specificLocations" 
-                  name="specificLocations" 
-                  value={formData.specificLocations} 
-                  onChange={handleInputChange} 
-                  placeholder="E.g., 'Chapter 7, pages 120-123' or 'Chapters 15 and 18'" 
-                  className="min-h-[100px]"
-                />
+                <div className="border rounded-md p-4 mt-2">
+                  <table className="w-full mb-3">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="text-left pb-2">Start Chapter</th>
+                        <th className="text-left pb-2">End Chapter</th>
+                        <th className="text-left pb-2">Start Page</th>
+                        <th className="text-left pb-2">End Page</th>
+                        <th className="w-10"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {formData.specificLocations.length > 0 ? (
+                        formData.specificLocations.map((location, index) => (
+                          <tr key={index} className="border-b last:border-b-0">
+                            <td className="py-2 pr-2">
+                              <Input
+                                type="number"
+                                min="1"
+                                value={location.startChapter}
+                                onChange={(e) => handleLocationChange(index, 'startChapter', e.target.value)}
+                                className="w-full"
+                              />
+                            </td>
+                            <td className="py-2 px-2">
+                              <Input
+                                type="number"
+                                min="1"
+                                value={location.endChapter}
+                                onChange={(e) => handleLocationChange(index, 'endChapter', e.target.value)}
+                                className="w-full"
+                              />
+                            </td>
+                            <td className="py-2 px-2">
+                              <Input
+                                type="number"
+                                min="1"
+                                value={location.startPage}
+                                onChange={(e) => handleLocationChange(index, 'startPage', e.target.value)}
+                                className="w-full"
+                              />
+                            </td>
+                            <td className="py-2 px-2">
+                              <Input
+                                type="number"
+                                min="1"
+                                value={location.endPage}
+                                onChange={(e) => handleLocationChange(index, 'endPage', e.target.value)}
+                                className="w-full"
+                              />
+                            </td>
+                            <td className="py-2 pl-2">
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => removeLocation(index)}
+                                className="h-8 w-8 text-red-500 hover:text-red-700"
+                              >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                  <path d="M3 6h18"></path>
+                                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path>
+                                  <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                </svg>
+                              </Button>
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan={5} className="py-4 text-center text-gray-500">
+                            No locations added yet. Add a section below.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={addLocation}
+                    className="w-full"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
+                      <path d="M12 5v14"></path>
+                      <path d="M5 12h14"></path>
+                    </svg>
+                    Add Section
+                  </Button>
+                </div>
               </div>
               
               <div>

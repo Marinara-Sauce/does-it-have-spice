@@ -46,9 +46,29 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           : null}
 
           {location.pathname === '/' && isMobile ? (
-            <Link to="/" className="text-2xl font-bold">
-              <span className="gradient-text">Does It Have Smut?</span>
-            </Link>
+            <div className="flex items-center gap-2">
+              {user ? (
+                  <Button variant="outline" size="sm" onClick={handleSignOut}>
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Sign Out
+                  </Button>
+                ) : (
+                  <>
+                    <Button variant="outline" size="sm" asChild>
+                      <Link to="/auth?tab=login">
+                        <LogIn className="h-4 w-4 mr-2" />
+                        Login
+                      </Link>
+                    </Button>
+                    <Button size="sm" asChild>
+                      <Link to="/auth?tab=signup">
+                        <UserPlus className="h-4 w-4 mr-2" />
+                        Sign Up
+                      </Link>
+                    </Button>
+                  </>
+                )}
+            </div>
           ) : null}
           
           {!isMobile && (

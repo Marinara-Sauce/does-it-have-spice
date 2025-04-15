@@ -2,6 +2,7 @@
 import React from 'react';
 import Layout from '@/components/Layout';
 import { Separator } from '@/components/ui/separator';
+import SmutLevelCard from '@/components/SmutLevelCard';
 
 const About = () => {
   return (
@@ -34,22 +35,26 @@ const About = () => {
             We use the term "smut" to refer to explicit sexual content in books. Our content indicators are categorized as:
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-            <div className="p-4 border rounded-lg">
-              <h3 className="font-medium mb-2 text-green-600">None</h3>
-              <p>No explicit sexual content. May contain romance, kissing, or implied intimacy.</p>
-            </div>
-            <div className="p-4 border rounded-lg">
-              <h3 className="font-medium mb-2 text-blue-600">Mild</h3>
-              <p>Contains some sensual scenes, but without explicit details. "Closed door" or fade-to-black scenes.</p>
-            </div>
-            <div className="p-4 border rounded-lg">
-              <h3 className="font-medium mb-2 text-yellow-600">Moderate</h3>
-              <p>Contains detailed romantic/sexual scenes with some explicit language or descriptions.</p>
-            </div>
-            <div className="p-4 border rounded-lg">
-              <h3 className="font-medium mb-2 text-red-600">Explicit</h3>
-              <p>Contains highly detailed sexual scenes with explicit language and descriptions.</p>
-            </div>
+            <SmutLevelCard
+              title="None"
+              description="No explicit sexual content. May contain romance, kissing, or implied intimacy."
+              color="text-green-600"
+            />
+            <SmutLevelCard
+              title="Mild"
+              description="Contains some sensual scenes, but without explicit details. 'Closed door' or fade-to-black scenes."
+              color="text-blue-600"
+            />
+            <SmutLevelCard
+              title="Moderate"
+              description="Includes explicit scenes but not overly graphic."
+              color="text-yellow-600"
+            />
+            <SmutLevelCard
+              title="Explicit"
+              description="Frequent and detailed sexual content."
+              color="text-red-600"
+            />
           </div>
           <p className="text-lg leading-relaxed">
             Our goal is not to censor or judge books based on their content, but to provide information so readers can make their own choices.

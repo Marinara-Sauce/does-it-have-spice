@@ -1,10 +1,13 @@
 import Layout from '@/components/Layout';
 import SearchBar from '@/components/SearchBar';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const Index = () => {
+  const isMobile = useIsMobile();
+
   return (
     <Layout>
-      <div className="flex flex-col items-center justify-center min-h-[80vh] px-4 sm:px-6">
+      <div className={`flex flex-col items-center justify-center min-h-[80vh] px-4 sm:px-6 ${isMobile ? 'mt-4' : ''}`}>
         <div className="max-w-3xl w-full text-center mb-8">
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-4">
             <span className="gradient-text">Does It Have Smut?</span>
