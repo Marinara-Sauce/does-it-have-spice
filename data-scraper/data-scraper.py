@@ -101,7 +101,7 @@ def insert_into_supabase(title, author, genre_list, isbn, smut_level, specific_l
     print("✅ Uploaded to Supabase:", result.data)
 
 # === MAIN ===
-def main(subject="mystery", count=100):
+def main(subject="manga", count=100):
     all_books = fetch_books(subject, limit=200)
     added = 0
     attempts = 0

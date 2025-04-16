@@ -8,6 +8,7 @@ import { LogIn, LogOut, UserPlus } from 'lucide-react';
 import SearchBar from '@/components/SearchBar';
 import MobileNav from '@/components/MobileNav';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { ThemeToggle } from './ui/ThemeToggle';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -67,7 +68,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                       </Link>
                     </Button>
                   </>
-                )}
+                )
+              }
+              <ThemeToggle />
             </div>
           ) : null}
           
@@ -112,6 +115,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                     </Button>
                   </>
                 )}
+                <ThemeToggle />
               </div>
             </nav>
           )}
