@@ -35,4 +35,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: dist
 
+      - name: Add the CNAME file
+        run: echo 'doesithavesmut.com' > dist/CNAME
+
 
