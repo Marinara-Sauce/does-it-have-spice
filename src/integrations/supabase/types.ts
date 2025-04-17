@@ -14,40 +14,37 @@ export type Database = {
           author: string
           created_at: string
           created_by: string
-          genre: string
+          genre: string | null
           id: string
           isbn: string | null
           notes: string | null
           smut_level: string
           specific_locations: string | null
           title: string
-          unique_book_id: string | null
         }
         Insert: {
           author: string
           created_at?: string
           created_by: string
-          genre: string
+          genre?: string | null
           id?: string
           isbn?: string | null
           notes?: string | null
           smut_level: string
           specific_locations?: string | null
           title: string
-          unique_book_id?: string | null
         }
         Update: {
           author?: string
           created_at?: string
           created_by?: string
-          genre?: string
+          genre?: string | null
           id?: string
           isbn?: string | null
           notes?: string | null
           smut_level?: string
           specific_locations?: string | null
           title?: string
-          unique_book_id?: string | null
         }
         Relationships: []
       }
@@ -78,7 +75,7 @@ export type Database = {
         Row: {
           author: string | null
           contribution_count: number | null
-          created_at: string | null
+          genre: string | null
           id: string | null
           isbn: string | null
           notes: string | null

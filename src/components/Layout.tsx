@@ -4,11 +4,12 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
-import { LogIn, LogOut, UserPlus } from 'lucide-react';
+import { LogIn, LogOut, UserPlus, Home, Book, Info, Send } from 'lucide-react';
 import SearchBar from '@/components/SearchBar';
 import MobileNav from '@/components/MobileNav';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ThemeToggle } from './ui/ThemeToggle';
+import ProfileIcon from './ProfileIcon';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -49,10 +50,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           {location.pathname === '/' && isMobile ? (
             <div className="flex items-center gap-2">
               {user ? (
-                  <Button variant="outline" size="sm" onClick={handleSignOut}>
-                    <LogOut className="h-4 w-4 mr-2" />
-                    Sign Out
-                  </Button>
+                  <ProfileIcon />
                 ) : (
                   <>
                     <Button variant="outline" size="sm" asChild>
@@ -95,10 +93,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               </ul>
               <div className="flex gap-2">
                 {user ? (
-                  <Button variant="outline" size="sm" onClick={handleSignOut}>
-                    <LogOut className="h-4 w-4 mr-2" />
-                    Sign Out
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <ProfileIcon />
+                    <ThemeToggle />
+                  </div>
                 ) : (
                   <>
                     <Button variant="outline" size="sm" asChild>
@@ -113,9 +111,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                         Sign Up
                       </Link>
                     </Button>
+                    <ThemeToggle />
                   </>
                 )}
-                <ThemeToggle />
               </div>
             </nav>
           )}

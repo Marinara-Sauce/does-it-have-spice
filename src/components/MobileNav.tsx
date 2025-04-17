@@ -6,7 +6,7 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
-import { LogIn, LogOut, UserPlus, Home, Book, Info, Send } from 'lucide-react';
+import { LogIn, LogOut, UserPlus, Home, Book, Info, Send, User } from 'lucide-react';
 
 const MobileNav = () => {
   const { user, signOut } = useAuth();
@@ -71,6 +71,16 @@ const MobileNav = () => {
                   </Link>
                 </Button>
               </li>
+              {user && (
+                <li>
+                  <Button variant="ghost" className="w-full justify-start" asChild>
+                    <Link to="/profile">
+                      <User className="mr-2 h-4 w-4" />
+                      My Submissions
+                    </Link>
+                  </Button>
+                </li>
+              )}
             </ul>
           </nav>
           
