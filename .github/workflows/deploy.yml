@@ -28,6 +28,10 @@ jobs:
       - name: Build project
         run: npm run build
 
+      # Add the CNAME file
+      - name: Add the CNAME file
+        run: echo 'doesithavesmut.com' > dist/CNAME
+
       # Deploy to GitHub Pages
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
@@ -35,7 +39,5 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: dist
 
-      - name: Add the CNAME file
-        run: echo 'doesithavesmut.com' > dist/CNAME
 
 
