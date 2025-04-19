@@ -31,6 +31,11 @@ jobs:
       # Add the CNAME file
       - name: Add the CNAME file
         run: echo 'doesithavesmut.com' > dist/CNAME
+      
+      # Copy index.html to 404.html
+      # This is necessary for GitHub Pages to serve the index.html file for 404 errors
+      - name: Copy index.html to 404.html
+        run: cp dist/index.html dist/404.html
 
       # Deploy to GitHub Pages
       - name: Deploy to GitHub Pages

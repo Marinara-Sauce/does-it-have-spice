@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Layout from '@/components/Layout';
@@ -23,16 +22,18 @@ type Book = {
 
 const SmutLevelBadge = ({ level }: { level: string }) => {
   const normalizedLevel = level?.toLowerCase() || 'none';
-  
+
   const colors = {
-    none: "bg-green-100 text-green-800",
-    mild: "bg-blue-100 text-blue-800",
-    moderate: "bg-yellow-100 text-yellow-800",
-    explicit: "bg-red-100 text-red-800"
+    none: 'bg-green-100 text-green-800',
+    mild: 'bg-blue-100 text-blue-800',
+    moderate: 'bg-yellow-100 text-yellow-800',
+    explicit: 'bg-red-100 text-red-800',
   };
-  
+
   return (
-    <span className={`px-2 py-1 rounded-full text-xs font-medium ${colors[normalizedLevel as keyof typeof colors] || colors.none}`}>
+    <span
+      className={`px-2 py-1 rounded-full text-xs font-medium ${colors[normalizedLevel as keyof typeof colors] || colors.none}`}
+    >
       {normalizedLevel.charAt(0).toUpperCase() + normalizedLevel.slice(1)}
     </span>
   );
@@ -47,9 +48,9 @@ const BookDetails = () => {
   useEffect(() => {
     const fetchBookDetails = async () => {
       if (!id) return;
-      
+
       setIsLoading(true);
-      
+
       try {
         // Query from aggregated_books view instead of books table
         const { data, error } = await supabase
@@ -57,7 +58,7 @@ const BookDetails = () => {
           .select('*')
           .eq('id', id)
           .maybeSingle(); // Use maybeSingle() instead of single() to avoid errors when no rows are found
-        
+
         if (error) {
           console.error('Error fetching book details:', error);
           toast.error('Failed to load book details');
@@ -82,12 +83,7 @@ const BookDetails = () => {
   return (
     <Layout>
       <div className="container mx-auto py-8 px-4 sm:px-6">
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          className="mb-6 -ml-2" 
-          onClick={() => navigate(-1)}
-        >
+        <Button variant="ghost" size="sm" className="mb-6 -ml-2" onClick={() => navigate(-1)}>
           <ChevronLeft className="mr-1 h-4 w-4" />
           Back to results
         </Button>
@@ -121,29 +117,29 @@ const BookDetails = () => {
                         {book.genre && (
                           <div className="flex items-center gap-2 text-sm">
                             <BookOpen size={16} className="text-muted-foreground" />
-                            <span className="font-medium">Genre:</span> 
+                            <span className="font-medium">Genre:</span>
                             <span>{book.genre}</span>
                           </div>
                         )}
-                        
+
                         {book.contribution_count && (
                           <div className="flex items-center gap-2 text-sm">
                             <BookOpen size={16} className="text-muted-foreground" />
-                            <span className="font-medium">Contributions:</span> 
+                            <span className="font-medium">Contributions:</span>
                             <span>{book.contribution_count}</span>
                           </div>
                         )}
-                        
+
                         {book.isbn && (
                           <div className="flex items-center gap-2 text-sm">
                             <BookText size={16} className="text-muted-foreground" />
-                            <span className="font-medium">ISBN:</span> 
+                            <span className="font-medium">ISBN:</span>
                             <span>{book.isbn}</span>
                           </div>
                         )}
                       </div>
                     </div>
-                    
+
                     {book.notes && (
                       <div className="mb-6">
                         <h3 className="text-lg font-medium mb-2">Notes</h3>
@@ -151,7 +147,7 @@ const BookDetails = () => {
                       </div>
                     )}
                   </div>
-                  
+
                   <div>
                     <div className="mb-6">
                       <h3 className="text-lg font-medium mb-2 flex items-center gap-2">
@@ -160,13 +156,18 @@ const BookDetails = () => {
                       </h3>
                       <p className="text-sm mb-4">
                         {book.smut_level === 'none' && 'This book contains no adult content.'}
-                        {book.smut_level === 'mild' && 'This book contains mild references to adult content.'}
-                        {book.smut_level === 'moderate' && 'This book contains moderate adult content.'}
-                        {book.smut_level === 'explicit' && 'This book contains explicit adult content.'}
+                        {book.smut_level === 'mild' &&
+                          'This book contains mild references to adult content.'}
+                        {book.smut_level === 'moderate' &&
+                          'This book contains moderate adult content.'}
+                        {book.smut_level === 'explicit' &&
+                          'This book contains explicit adult content.'}
                       </p>
                     </div>
-                    
-                    {book.specific_locations && <ContentWarningList locations={book.specific_locations} />}
+
+                    {book.specific_locations && (
+                      <ContentWarningList locations={book.specific_locations} />
+                    )}
                   </div>
                 </div>
               </CardContent>

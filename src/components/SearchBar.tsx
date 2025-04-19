@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -19,12 +18,15 @@ const SearchBar = ({ className }: { className?: string }) => {
   return (
     <form onSubmit={handleSearch} className={`flex items-center gap-2 ${className}`}>
       <div className="relative flex-grow">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={18} />
+        <Search
+          className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground"
+          size={18}
+        />
         <Input
           type="text"
           placeholder="Search books..."
           value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
+          onChange={e => setSearchQuery(e.target.value)}
           className="pl-9 w-full h-9"
         />
       </div>

@@ -103,10 +103,7 @@ export function UserProfile() {
     if (!currentBook) return;
 
     try {
-      const { error } = await supabase
-        .from('books')
-        .delete()
-        .eq('id', currentBook.id);
+      const { error } = await supabase.from('books').delete().eq('id', currentBook.id);
 
       if (error) {
         throw error;
@@ -133,7 +130,7 @@ export function UserProfile() {
     <Layout>
       <div className="container mx-auto py-8 px-4">
         <h1 className="text-3xl font-bold mb-6">My Submissions</h1>
-        
+
         {loading ? (
           <div className="text-center py-8">Loading your submissions...</div>
         ) : submissions.length === 0 ? (
@@ -155,7 +152,7 @@ export function UserProfile() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {submissions.map((book) => (
+                {submissions.map(book => (
                   <TableRow key={book.id}>
                     <TableCell className="font-medium">{book.title}</TableCell>
                     <TableCell>{book.author}</TableCell>
@@ -163,11 +160,7 @@ export function UserProfile() {
                     <TableCell>{formatDate(book.created_at)}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          onClick={() => handleEdit(book)}
-                        >
+                        <Button variant="outline" size="icon" onClick={() => handleEdit(book)}>
                           <Pencil className="h-4 w-4" />
                           <span className="sr-only">Edit</span>
                         </Button>
@@ -276,7 +269,9 @@ export function UserProfile() {
               <DialogClose asChild>
                 <Button variant="outline">Cancel</Button>
               </DialogClose>
-              <Button variant="destructive" onClick={confirmDelete}>Delete</Button>
+              <Button variant="destructive" onClick={confirmDelete}>
+                Delete
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
