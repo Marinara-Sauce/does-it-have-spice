@@ -104,3 +104,14 @@
   @apply text-transparent bg-clip-text bg-gradient-to-r from-purple-dark via-purple to-pink animate-gradient-shift;
   background-size: 200% 200%;
 }
+
+/* Custom scrollbar for the form */
+form.overflow-y-auto::-webkit-scrollbar {
+  width: 8px; /* Width of the scrollbar */
+}
+
+/* For Firefox */
+form.overflow-y-auto {
+  scrollbar-width: thin; /* Thin scrollbar */
+  scrollbar-color: #c0c0c0 #f0f0f0; /* Thumb color and track color */
+}
