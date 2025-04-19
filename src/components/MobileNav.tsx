@@ -49,7 +49,7 @@ const MobileNav = () => {
               </li>
               <li>
                 <Button variant="ghost" className="w-full justify-start" asChild>
-                  <Link to="/search">
+                  <Link to="/browse">
                     <Book className="mr-2 h-4 w-4" />
                     Browse
                   </Link>

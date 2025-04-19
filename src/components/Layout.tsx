@@ -81,6 +81,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                   </Link>
                 </li>
                 <li>
+                  <Link to="/browse" className="text-foreground hover:text-primary transition-colors">
+                    Browse
+                  </Link>
+                </li>
+                <li>
                   <Link to="/about" className="text-foreground hover:text-primary transition-colors">
                     About
                   </Link>
