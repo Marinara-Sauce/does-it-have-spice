@@ -1,0 +1,18 @@
+# Ignore artifacts
+build
+dist
+coverage
+node_modules
+
+# Ignore all HTML files:
+*.html
+
+# Other files to ignore
+.eslintrc
+.prettierrc
+package.json
+package-lock.json
+README.md
+
+# Ignore the data-scraper
+data-scraper

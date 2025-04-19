@@ -1,5 +1,4 @@
-
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -15,18 +14,18 @@ import {
   DialogFooter,
   DialogClose,
 } from '@/components/ui/dialog';
-import { 
-  Form, 
-  FormField, 
-  FormItem, 
-  FormLabel, 
-  FormControl, 
-  FormMessage 
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useForm } from 'react-hook-form';
-import { 
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -75,17 +74,7 @@ const UserProfile = () => {
   const [currentBook, setCurrentBook] = useState<Book | null>(null);
   const form = useForm<EditBookFormValues>();
 
-  useEffect(() => {
-    // Redirect if not logged in
-    if (!user) {
-      navigate('/auth?tab=login');
-      return;
-    }
-
-    fetchUserSubmissions();
-  }, [user, navigate]);
-
-  const fetchUserSubmissions = async () => {
+  const fetchUserSubmissions = useCallback(async () => {
     if (!user) return;
 
     setLoading(true);
@@ -107,7 +96,17 @@ const UserProfile = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    // Redirect if not logged in
+    if (!user) {
+      navigate('/auth?tab=login');
+      return;
+    }
+
+    fetchUserSubmissions();
+  }, [fetchUserSubmissions, navigate, user]);
 
   const handleEdit = (book: Book) => {
     setCurrentBook(book);
@@ -132,10 +131,7 @@ const UserProfile = () => {
     if (!currentBook) return;
 
     try {
-      const { error } = await supabase
-        .from('books')
-        .delete()
-        .eq('id', currentBook.id);
+      const { error } = await supabase.from('books').delete().eq('id', currentBook.id);
 
       if (error) {
         throw error;
@@ -192,7 +188,7 @@ const UserProfile = () => {
     <Layout>
       <div className="container mx-auto py-8 px-4">
         <h1 className="text-3xl font-bold mb-6">My Submissions</h1>
-        
+
         {loading ? (
           <div className="text-center py-8">Loading your submissions...</div>
         ) : submissions.length === 0 ? (
@@ -214,7 +210,7 @@ const UserProfile = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {submissions.map((book) => (
+                {submissions.map(book => (
                   <TableRow key={book.id}>
                     <TableCell className="font-medium">{book.title}</TableCell>
                     <TableCell>{book.author}</TableCell>
@@ -222,11 +218,7 @@ const UserProfile = () => {
                     <TableCell>{formatDate(book.created_at)}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          onClick={() => handleEdit(book)}
-                        >
+                        <Button variant="outline" size="icon" onClick={() => handleEdit(book)}>
                           <Pencil className="h-4 w-4" />
                           <span className="sr-only">Edit</span>
                         </Button>
@@ -269,7 +261,7 @@ const UserProfile = () => {
                     </FormItem>
                   )}
                 />
-                
+
                 <FormField
                   control={form.control}
                   name="author"
@@ -283,7 +275,7 @@ const UserProfile = () => {
                     </FormItem>
                   )}
                 />
-                
+
                 <FormField
                   control={form.control}
                   name="genre"
@@ -297,17 +289,14 @@ const UserProfile = () => {
                     </FormItem>
                   )}
                 />
-                
+
                 <FormField
                   control={form.control}
                   name="smut_level"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Smut Level</FormLabel>
-                      <Select 
-                        defaultValue={field.value} 
-                        onValueChange={field.onChange}
-                      >
+                      <Select defaultValue={field.value} onValueChange={field.onChange}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select smut level" />
@@ -324,7 +313,7 @@ const UserProfile = () => {
                     </FormItem>
                   )}
                 />
-                
+
                 <FormField
                   control={form.control}
                   name="specific_locations"
@@ -338,7 +327,7 @@ const UserProfile = () => {
                     </FormItem>
                   )}
                 />
-                
+
                 <FormField
                   control={form.control}
                   name="notes"
@@ -352,7 +341,7 @@ const UserProfile = () => {
                     </FormItem>
                   )}
                 />
-                
+
                 <FormField
                   control={form.control}
                   name="isbn"
@@ -366,10 +355,12 @@ const UserProfile = () => {
                     </FormItem>
                   )}
                 />
-                
+
                 <DialogFooter>
                   <DialogClose asChild>
-                    <Button variant="outline" type="button">Cancel</Button>
+                    <Button variant="outline" type="button">
+                      Cancel
+                    </Button>
                   </DialogClose>
                   <Button type="submit">Save Changes</Button>
                 </DialogFooter>
@@ -390,7 +381,9 @@ const UserProfile = () => {
               <DialogClose asChild>
                 <Button variant="outline">Cancel</Button>
               </DialogClose>
-              <Button variant="destructive" onClick={confirmDelete}>Delete</Button>
+              <Button variant="destructive" onClick={confirmDelete}>
+                Delete
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
