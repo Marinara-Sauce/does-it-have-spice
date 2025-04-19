@@ -7,7 +7,6 @@ import Layout from '@/components/Layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { RadioGroup } from '@/components/ui/radio-group';
 import SmutLevelCard from '@/components/SmutLevelCard';
@@ -94,12 +93,16 @@ const Contribute = () => {
 
     try {
       // Format the locations into a string for storage
-      const formattedLocations = formData.specificLocations.length > 0
-        ? formData.specificLocations.map(loc => 
-            `Chapters ${loc.startChapter}${loc.endChapter !== loc.startChapter ? '-'+loc.endChapter : ''}, ` +
-            `Pages ${loc.startPage}${loc.endPage !== loc.startPage ? '-'+loc.endPage : ''}`
-          ).join('; ')
-        : null;
+      const formattedLocations =
+        formData.specificLocations.length > 0
+          ? formData.specificLocations
+              .map(
+                loc =>
+                  `Chapters ${loc.startChapter}${loc.endChapter !== loc.startChapter ? '-' + loc.endChapter : ''}, ` +
+                  `Pages ${loc.startPage}${loc.endPage !== loc.startPage ? '-' + loc.endPage : ''}`,
+              )
+              .join('; ')
+          : null;
 
       const { data, error } = await supabase.from('books').insert({
         title: formData.title,
