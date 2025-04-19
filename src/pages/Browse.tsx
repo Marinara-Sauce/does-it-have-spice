@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import Layout from '@/components/Layout';
@@ -24,7 +23,7 @@ interface BookStats {
 const Browse = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<string>('smut-level');
-  
+
   const { data: stats, isLoading } = useQuery({
     queryKey: ['bookStats'],
     queryFn: async (): Promise<BookStats> => {
@@ -67,27 +66,24 @@ const Browse = () => {
         return {
           total: total || 0,
           bySmutLevel,
-          byGenre
+          byGenre,
         };
       } catch (error) {
         console.error('Error fetching book stats:', error);
         toast.error('Error loading book statistics');
         return { total: 0, bySmutLevel: {}, byGenre: {} };
       }
-    }
+    },
   });
 
   const { data: books, isLoading: isLoadingBooks } = useQuery({
     queryKey: ['allBooks'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('aggregated_books')
-        .select('*')
-        .order('title');
-      
+      const { data, error } = await supabase.from('aggregated_books').select('*').order('title');
+
       if (error) throw error;
       return data || [];
-    }
+    },
   });
 
   const handleFilter = (filter: string, value: string) => {
@@ -105,9 +101,7 @@ const Browse = () => {
           onClick={() => handleFilter(type, key)}
         >
           <span>{key}</span>
-          <span className="ml-2 rounded-full bg-muted px-2 py-0.5 text-xs">
-            {count}
-          </span>
+          <span className="ml-2 rounded-full bg-muted px-2 py-0.5 text-xs">{count}</span>
         </Button>
       ));
   };
@@ -139,8 +133,12 @@ const Browse = () => {
                 </p>
                 <Tabs defaultValue="smut-level" className="w-full" onValueChange={setActiveTab}>
                   <TabsList className="w-full mb-4">
-                    <TabsTrigger value="smut-level" className="flex-1">Content Level</TabsTrigger>
-                    <TabsTrigger value="genre" className="flex-1">Genre</TabsTrigger>
+                    <TabsTrigger value="smut-level" className="flex-1">
+                      Content Level
+                    </TabsTrigger>
+                    <TabsTrigger value="genre" className="flex-1">
+                      Genre
+                    </TabsTrigger>
                   </TabsList>
                   <TabsContent value="smut-level" className="mt-0">
                     <ScrollArea className="h-[400px]">

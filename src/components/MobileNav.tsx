@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Menu } from 'lucide-react';
@@ -14,7 +13,7 @@ const MobileNav = () => {
 
   const handleSignOut = async () => {
     await signOut();
-    toast.success("Signed out successfully");
+    toast.success('Signed out successfully');
     navigate('/');
   };
 
@@ -29,14 +28,11 @@ const MobileNav = () => {
       <SheetContent side="left" className="w-[250px] sm:w-[300px]">
         <div className="flex flex-col h-full py-4">
           <div className="px-2 mb-8">
-            <Link 
-              to="/" 
-              className="text-xl font-bold"
-            >
+            <Link to="/" className="text-xl font-bold">
               <span className="gradient-text">Does It Have Smut?</span>
             </Link>
           </div>
-          
+
           <nav className="flex-1">
             <ul className="flex flex-col gap-1 px-2">
               <li>
@@ -83,14 +79,10 @@ const MobileNav = () => {
               )}
             </ul>
           </nav>
-          
+
           <div className="border-t pt-4 px-2">
             {user ? (
-              <Button 
-                variant="outline" 
-                className="w-full justify-start" 
-                onClick={handleSignOut}
-              >
+              <Button variant="outline" className="w-full justify-start" onClick={handleSignOut}>
                 <LogOut className="mr-2 h-4 w-4" />
                 Sign Out
               </Button>

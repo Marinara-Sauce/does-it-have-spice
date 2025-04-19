@@ -1,4 +1,3 @@
-
 import { AlertTriangle } from 'lucide-react';
 
 interface ContentWarningListProps {
@@ -18,7 +17,9 @@ const ContentWarningList = ({ locations }: ContentWarningListProps) => {
       </div>
       <ul className="list-disc list-inside space-y-1">
         {warningList.map((warning, index) => (
-          <li key={index} className="text-sm text-muted-foreground">{warning}</li>
+          <li key={index} className="text-sm text-muted-foreground">
+            {warning}
+          </li>
         ))}
       </ul>
     </div>
