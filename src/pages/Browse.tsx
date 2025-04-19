@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import Layout from '@/components/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,6 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { BookList } from '@/components/BookList';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
+import PaginationControls from '@/components/PaginationControls';
 
 interface BookStats {
   total: number;
@@ -23,6 +24,10 @@ interface BookStats {
 const Browse = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<string>('smut-level');
+
+  const [totalPages, setTotalPages] = useState(0);
+  const [resultsPerPage, setResultsPerPage] = useState(10);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const { data: stats, isLoading } = useQuery({
     queryKey: ['bookStats'],
@@ -76,15 +81,29 @@ const Browse = () => {
     },
   });
 
-  const { data: books, isLoading: isLoadingBooks } = useQuery({
+  const {
+    data: books,
+    isLoading: isLoadingBooks,
+    refetch: refetchBooks,
+  } = useQuery({
     queryKey: ['allBooks'],
     queryFn: async () => {
-      const { data, error } = await supabase.from('aggregated_books').select('*').order('title');
+      const { data, count, error } = await supabase
+        .from('aggregated_books')
+        .select('*', { count: 'exact' })
+        .range((currentPage - 1) * resultsPerPage, currentPage * resultsPerPage - 1)
+        .order('title');
 
       if (error) throw error;
+
+      setTotalPages(Math.ceil(count / resultsPerPage));
       return data || [];
     },
   });
+
+  useEffect(() => {
+    refetchBooks();
+  }, [currentPage, resultsPerPage, refetchBooks]);
 
   const handleFilter = (filter: string, value: string) => {
     navigate(`/search?${filter}=${encodeURIComponent(value)}`);
@@ -106,7 +125,7 @@ const Browse = () => {
       ));
   };
 
-  if (isLoading) {
+  if (isLoading || isLoadingBooks) {
     return (
       <Layout>
         <div className="container mx-auto py-8 animate-pulse">
@@ -162,6 +181,13 @@ const Browse = () => {
           {/* Books List */}
           <div className="flex-1">
             <BookList books={books || []} isLoading={isLoadingBooks} />
+            <PaginationControls
+              resultsPerPage={resultsPerPage}
+              setResultsPerPage={setResultsPerPage}
+              currentPage={currentPage}
+              setCurrentPage={setCurrentPage}
+              totalPages={totalPages}
+            />
           </div>
         </div>
       </div>

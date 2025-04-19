@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -15,24 +15,6 @@ import {
   DialogClose,
 } from '@/components/ui/dialog';
 import {
-  Form,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormControl,
-  FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { useForm } from 'react-hook-form';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
   Table,
   TableBody,
   TableCaption,
@@ -41,6 +23,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { EditBookModal } from '@/components/EditBookModal';
+import { useIsMobile } from '@/hooks/use-mobile';
+import PaginationControls from '@/components/PaginationControls';
 
 interface Book {
   id: string;
@@ -54,17 +39,7 @@ interface Book {
   created_at: string;
 }
 
-interface EditBookFormValues {
-  title: string;
-  author: string;
-  genre: string;
-  smut_level: string;
-  specific_locations: string;
-  notes: string;
-  isbn: string;
-}
-
-const UserProfile = () => {
+export function UserProfile() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [submissions, setSubmissions] = useState<Book[]>([]);
@@ -72,17 +47,21 @@ const UserProfile = () => {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [currentBook, setCurrentBook] = useState<Book | null>(null);
-  const form = useForm<EditBookFormValues>();
+
+  const [totalPages, setTotalPages] = useState(0);
+  const [resultsPerPage, setResultsPerPage] = useState(10);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const fetchUserSubmissions = useCallback(async () => {
     if (!user) return;
 
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      const { data, count, error } = await supabase
         .from('books')
-        .select('*')
+        .select('*', { count: 'exact' })
         .eq('created_by', user.id)
+        .range((currentPage - 1) * resultsPerPage, currentPage * resultsPerPage - 1)
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -90,13 +69,14 @@ const UserProfile = () => {
       }
 
       setSubmissions(data || []);
+      setTotalPages(Math.ceil(count / resultsPerPage));
     } catch (error) {
       console.error('Error fetching submissions:', error);
       toast.error('Failed to load your submissions');
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, [user, currentPage, resultsPerPage]);
 
   useEffect(() => {
     // Redirect if not logged in
@@ -106,26 +86,17 @@ const UserProfile = () => {
     }
 
     fetchUserSubmissions();
-  }, [fetchUserSubmissions, navigate, user]);
+  }, [user, navigate, fetchUserSubmissions]);
 
-  const handleEdit = (book: Book) => {
+  const handleEdit = useCallback((book: Book) => {
     setCurrentBook(book);
-    form.reset({
-      title: book.title,
-      author: book.author,
-      genre: book.genre || '',
-      smut_level: book.smut_level,
-      specific_locations: book.specific_locations || '',
-      notes: book.notes || '',
-      isbn: book.isbn || '',
-    });
     setEditDialogOpen(true);
-  };
+  }, []);
 
-  const handleDelete = (book: Book) => {
+  const handleDelete = useCallback((book: Book) => {
     setCurrentBook(book);
     setDeleteDialogOpen(true);
-  };
+  }, []);
 
   const confirmDelete = async () => {
     if (!currentBook) return;
@@ -146,43 +117,13 @@ const UserProfile = () => {
     }
   };
 
-  const onSubmitEdit = async (values: EditBookFormValues) => {
-    if (!currentBook) return;
-
-    try {
-      const { error } = await supabase
-        .from('books')
-        .update({
-          title: values.title,
-          author: values.author,
-          genre: values.genre || null,
-          smut_level: values.smut_level,
-          specific_locations: values.specific_locations || null,
-          notes: values.notes || null,
-          isbn: values.isbn || null,
-        })
-        .eq('id', currentBook.id);
-
-      if (error) {
-        throw error;
-      }
-
-      toast.success('Submission updated successfully');
-      fetchUserSubmissions();
-      setEditDialogOpen(false);
-    } catch (error) {
-      console.error('Error updating submission:', error);
-      toast.error('Failed to update submission');
-    }
-  };
-
-  const formatDate = (dateString: string) => {
+  const formatDate = useCallback((dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
     });
-  };
+  }, []);
 
   return (
     <Layout>
@@ -199,7 +140,6 @@ const UserProfile = () => {
         ) : (
           <div className="overflow-x-auto">
             <Table>
-              <TableCaption>A list of your book content submissions</TableCaption>
               <TableHeader>
                 <TableRow>
                   <TableHead>Title</TableHead>
@@ -237,137 +177,23 @@ const UserProfile = () => {
                 ))}
               </TableBody>
             </Table>
+            <PaginationControls
+              resultsPerPage={resultsPerPage}
+              setResultsPerPage={setResultsPerPage}
+              currentPage={currentPage}
+              setCurrentPage={setCurrentPage}
+              totalPages={totalPages}
+            />
           </div>
         )}
 
-        {/* Edit Dialog */}
-        <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-          <DialogContent className="sm:max-w-[600px]">
-            <DialogHeader>
-              <DialogTitle>Edit Submission</DialogTitle>
-            </DialogHeader>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmitEdit)} className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="title"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Title</FormLabel>
-                      <FormControl>
-                        <Input {...field} required />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="author"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Author</FormLabel>
-                      <FormControl>
-                        <Input {...field} required />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="genre"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Genre</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="smut_level"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Smut Level</FormLabel>
-                      <Select defaultValue={field.value} onValueChange={field.onChange}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select smut level" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="none">None</SelectItem>
-                          <SelectItem value="mild">Mild</SelectItem>
-                          <SelectItem value="moderate">Moderate</SelectItem>
-                          <SelectItem value="explicit">Explicit</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="specific_locations"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Content to Avoid (Format: Chapter X-Y - Pages X-Y)</FormLabel>
-                      <FormControl>
-                        <Textarea {...field} rows={3} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="notes"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Notes</FormLabel>
-                      <FormControl>
-                        <Textarea {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="isbn"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>ISBN</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <DialogFooter>
-                  <DialogClose asChild>
-                    <Button variant="outline" type="button">
-                      Cancel
-                    </Button>
-                  </DialogClose>
-                  <Button type="submit">Save Changes</Button>
-                </DialogFooter>
-              </form>
-            </Form>
-          </DialogContent>
-        </Dialog>
+        {/* Edit Book Modal Component */}
+        <EditBookModal
+          book={currentBook}
+          isOpen={editDialogOpen}
+          onOpenChange={setEditDialogOpen}
+          onSuccess={fetchUserSubmissions}
+        />
 
         {/* Delete Confirmation Dialog */}
         <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
@@ -390,6 +216,6 @@ const UserProfile = () => {
       </div>
     </Layout>
   );
-};
+}
 
 export default UserProfile;

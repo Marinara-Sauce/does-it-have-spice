@@ -11,6 +11,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Users } from 'lucide-react';
 import ContentWarningList from '@/components/ContentWarningList';
+import PaginationControls from './PaginationControls';
 
 interface Book {
   id: string;
@@ -88,7 +89,7 @@ export const BookList: React.FC<BookListProps> = ({ books, isLoading }) => {
           <CardHeader className="pb-2">
             <div className="flex justify-between items-start">
               <div>
-                <CardTitle className="line-clamp-1">{book.title}</CardTitle>
+                <CardTitle className="line-clamp-1 text-xl">{book.title}</CardTitle>
                 <CardDescription>by {book.author}</CardDescription>
               </div>
               <SmutLevelBadge level={book.smut_level} />

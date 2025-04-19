@@ -2,6 +2,7 @@ import React from 'react';
 import Layout from '@/components/Layout';
 import { Separator } from '@/components/ui/separator';
 import SmutLevelCard from '@/components/SmutLevelCard';
+import { Link, useRoutes } from 'react-router-dom';
 
 const About = () => {
   return (
@@ -75,9 +76,9 @@ const About = () => {
           <p className="text-lg leading-relaxed">
             We rely on our community to provide accurate information, and we encourage respectful
             discussion about book content. If you'd like to contribute, please visit our{' '}
-            <a href="/contribute" className="text-primary hover:underline">
+            <Link to="/contribute" className="text-primary hover:underline">
               Contribute
-            </a>{' '}
+            </Link>{' '}
             page.
           </p>
         </section>
