@@ -2,7 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Layout from '@/components/Layout';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Users } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -21,16 +28,18 @@ type Book = {
 
 const SmutLevelBadge = ({ level }: { level: string }) => {
   const normalizedLevel = level?.toLowerCase() || 'none';
-  
+
   const colors = {
-    none: "bg-green-100 text-green-800",
-    mild: "bg-blue-100 text-blue-800",
-    moderate: "bg-yellow-100 text-yellow-800",
-    explicit: "bg-red-100 text-red-800"
+    none: 'bg-green-100 text-green-800',
+    mild: 'bg-blue-100 text-blue-800',
+    moderate: 'bg-yellow-100 text-yellow-800',
+    explicit: 'bg-red-100 text-red-800',
   };
-  
+
   return (
-    <span className={`px-2 py-1 rounded-full text-xs font-medium ${colors[normalizedLevel as keyof typeof colors] || colors.none}`}>
+    <span
+      className={`px-2 py-1 rounded-full text-xs font-medium ${colors[normalizedLevel as keyof typeof colors] || colors.none}`}
+    >
       {normalizedLevel.charAt(0).toUpperCase() + normalizedLevel.slice(1)}
     </span>
   );
@@ -46,13 +55,13 @@ const SearchResults = () => {
   useEffect(() => {
     const fetchBooks = async () => {
       setIsLoading(true);
-      
+
       try {
         const { data, error } = await supabase
           .from('aggregated_books')
           .select('*')
           .or(`title.ilike.%${query}%,author.ilike.%${query}%`);
-        
+
         if (error) {
           console.error('Error fetching search results:', error);
           toast.error('Error fetching search results');
@@ -101,9 +110,9 @@ const SearchResults = () => {
           </div>
         ) : searchResults.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {searchResults.map((book) => (
-              <Card 
-                key={book.id} 
+            {searchResults.map(book => (
+              <Card
+                key={book.id}
                 className="overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
                 onClick={() => handleViewDetails(book.id)}
               >
@@ -119,15 +128,24 @@ const SearchResults = () => {
                 <CardContent>
                   <div className="flex items-center gap-2 text-sm mb-2">
                     <Users size={16} className="text-muted-foreground" />
-                    <span>{book.contribution_count} contribution{book.contribution_count !== 1 ? 's' : ''}</span>
+                    <span>
+                      {book.contribution_count} contribution
+                      {book.contribution_count !== 1 ? 's' : ''}
+                    </span>
                   </div>
-                  
-                  <p className="text-sm mb-3 line-clamp-2">{book.notes || "No additional notes available."}</p>
-                  
-                  {book.specific_locations && <ContentWarningList locations={book.specific_locations} />}
+
+                  <p className="text-sm mb-3 line-clamp-2">
+                    {book.notes || 'No additional notes available.'}
+                  </p>
+
+                  {book.specific_locations && (
+                    <ContentWarningList locations={book.specific_locations} />
+                  )}
                 </CardContent>
                 <CardFooter>
-                  <Button variant="outline" className="w-full">View Details</Button>
+                  <Button variant="outline" className="w-full">
+                    View Details
+                  </Button>
                 </CardFooter>
               </Card>
             ))}

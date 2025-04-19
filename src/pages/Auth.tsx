@@ -1,11 +1,17 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { toast } from '@/components/ui/sonner';
 import { AlertCircle } from 'lucide-react';
@@ -18,7 +24,7 @@ const Auth = () => {
   const { session } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
+
   // Form states
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -35,7 +41,7 @@ const Auth = () => {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
-    
+
     try {
       const { error } = await supabase.auth.signUp({
         email,
@@ -46,34 +52,36 @@ const Auth = () => {
           },
         },
       });
-      
+
       if (error) throw error;
-      
-      toast.success("Sign up successful! Check your email for confirmation.");
+
+      toast.success('Sign up successful! Check your email for confirmation.');
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
-      setError(error.message || "An error occurred during sign up");
+      setError(error.message || 'An error occurred during sign up');
     } finally {
       setIsLoading(false);
     }
   };
-  
+
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
-    
+
     try {
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
-      
+
       if (error) throw error;
-      
-      toast.success("Signed in successfully!");
+
+      toast.success('Signed in successfully!');
       navigate('/');
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
-      setError(error.message || "Invalid email or password");
+      setError(error.message || 'Invalid email or password');
     } finally {
       setIsLoading(false);
     }
@@ -87,7 +95,7 @@ const Auth = () => {
             <TabsTrigger value="login">Login</TabsTrigger>
             <TabsTrigger value="signup">Sign Up</TabsTrigger>
           </TabsList>
-          
+
           <TabsContent value="login">
             <Card>
               <CardHeader>
@@ -106,35 +114,35 @@ const Auth = () => {
                   )}
                   <div className="space-y-2">
                     <Label htmlFor="email">Email</Label>
-                    <Input 
-                      id="email" 
-                      type="email" 
-                      placeholder="your.email@example.com" 
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="your.email@example.com"
                       value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      required 
+                      onChange={e => setEmail(e.target.value)}
+                      required
                     />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="password">Password</Label>
-                    <Input 
-                      id="password" 
-                      type="password" 
+                    <Input
+                      id="password"
+                      type="password"
                       value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required 
+                      onChange={e => setPassword(e.target.value)}
+                      required
                     />
                   </div>
                 </CardContent>
                 <CardFooter>
                   <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading ? "Signing in..." : "Sign In"}
+                    {isLoading ? 'Signing in...' : 'Sign In'}
                   </Button>
                 </CardFooter>
               </form>
             </Card>
           </TabsContent>
-          
+
           <TabsContent value="signup">
             <Card>
               <CardHeader>
@@ -153,34 +161,34 @@ const Auth = () => {
                   )}
                   <div className="space-y-2">
                     <Label htmlFor="username">Username</Label>
-                    <Input 
-                      id="username" 
-                      placeholder="bookworm123" 
+                    <Input
+                      id="username"
+                      placeholder="bookworm123"
                       value={username}
-                      onChange={(e) => setUsername(e.target.value)}
-                      required 
+                      onChange={e => setUsername(e.target.value)}
+                      required
                     />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="signup-email">Email</Label>
-                    <Input 
-                      id="signup-email" 
-                      type="email" 
-                      placeholder="your.email@example.com" 
+                    <Input
+                      id="signup-email"
+                      type="email"
+                      placeholder="your.email@example.com"
                       value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      required 
+                      onChange={e => setEmail(e.target.value)}
+                      required
                     />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="signup-password">Password</Label>
-                    <Input 
-                      id="signup-password" 
-                      type="password" 
-                      placeholder="Create a strong password" 
+                    <Input
+                      id="signup-password"
+                      type="password"
+                      placeholder="Create a strong password"
                       value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required 
+                      onChange={e => setPassword(e.target.value)}
+                      required
                     />
                     <p className="text-xs text-muted-foreground">
                       Password must be at least 6 characters long.
@@ -189,7 +197,7 @@ const Auth = () => {
                 </CardContent>
                 <CardFooter>
                   <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading ? "Creating Account..." : "Create Account"}
+                    {isLoading ? 'Creating Account...' : 'Create Account'}
                   </Button>
                 </CardFooter>
               </form>

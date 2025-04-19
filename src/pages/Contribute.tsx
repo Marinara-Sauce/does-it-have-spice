@@ -1,4 +1,3 @@
-
 import { useState, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -8,7 +7,13 @@ import Layout from '@/components/Layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import SmutLevelCard from '@/components/SmutLevelCard';
@@ -30,7 +35,7 @@ const Contribute = () => {
     isbn: '',
     smutLevel: '',
     specificLocations: [],
-    notes: ''
+    notes: '',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -43,11 +48,14 @@ const Contribute = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-   // Add a new empty location row
-   const addLocation = () => {
+  // Add a new empty location row
+  const addLocation = () => {
     setFormData(prev => ({
       ...prev,
-      specificLocations: [...prev.specificLocations, { startChapter: '', endChapter: '', startPage: '', endPage: '' }]
+      specificLocations: [
+        ...prev.specificLocations,
+        { startChapter: '', endChapter: '', startPage: '', endPage: '' },
+      ],
     }));
   };
 
@@ -55,7 +63,7 @@ const Contribute = () => {
   const removeLocation = (index: number) => {
     setFormData(prev => ({
       ...prev,
-      specificLocations: prev.specificLocations.filter((_, i) => i !== index)
+      specificLocations: prev.specificLocations.filter((_, i) => i !== index),
     }));
   };
 
@@ -65,26 +73,26 @@ const Contribute = () => {
       const newLocations = [...prev.specificLocations];
       newLocations[index] = {
         ...newLocations[index],
-        [field]: value
+        [field]: value,
       };
       return {
         ...prev,
-        specificLocations: newLocations
+        specificLocations: newLocations,
       };
     });
   };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    
+
     if (!user) {
-      toast.error("You must be logged in to contribute");
+      toast.error('You must be logged in to contribute');
       navigate('/auth?tab=login');
       return;
     }
 
     if (!formData.title || !formData.author || !formData.genre || !formData.smutLevel) {
-      toast.error("Please fill in all required fields");
+      toast.error('Please fill in all required fields');
       return;
     }
 
@@ -92,12 +100,16 @@ const Contribute = () => {
 
     try {
       // Format the locations into a string for storage
-      const formattedLocations = formData.specificLocations.length > 0
-        ? formData.specificLocations.map(loc => 
-            `Chapters ${loc.startChapter}${loc.endChapter !== loc.startChapter ? '-'+loc.endChapter : ''}, ` +
-            `Pages ${loc.startPage}${loc.endPage !== loc.startPage ? '-'+loc.endPage : ''}`
-          ).join('; ')
-        : null;
+      const formattedLocations =
+        formData.specificLocations.length > 0
+          ? formData.specificLocations
+              .map(
+                loc =>
+                  `Chapters ${loc.startChapter}${loc.endChapter !== loc.startChapter ? '-' + loc.endChapter : ''}, ` +
+                  `Pages ${loc.startPage}${loc.endPage !== loc.startPage ? '-' + loc.endPage : ''}`,
+              )
+              .join('; ')
+          : null;
 
       const { data, error } = await supabase.from('books').insert({
         title: formData.title,
@@ -107,12 +119,12 @@ const Contribute = () => {
         smut_level: formData.smutLevel,
         specific_locations: formattedLocations,
         notes: formData.notes || null,
-        created_by: user.id
+        created_by: user.id,
       });
-      
+
       if (error) throw error;
-      
-      toast.success("Thank you for your contribution!");
+
+      toast.success('Thank you for your contribution!');
       setFormData({
         title: '',
         author: '',
@@ -120,18 +132,17 @@ const Contribute = () => {
         isbn: '',
         smutLevel: '',
         specificLocations: [],
-        notes: ''
+        notes: '',
       });
-      
+
       // Navigate to search results for the book just added
       navigate(`/search?q=${encodeURIComponent(formData.title)}`);
-      
     } catch (error: unknown) {
       console.error('Error submitting form:', error);
       if (error instanceof Error) {
-        toast.error(error.message || "Failed to submit your contribution");
+        toast.error(error.message || 'Failed to submit your contribution');
       } else {
-        toast.error("An unknown error occurred");
+        toast.error('An unknown error occurred');
       }
     } finally {
       setIsSubmitting(false);
@@ -144,9 +155,7 @@ const Contribute = () => {
         <div className="container mx-auto py-16 px-4 sm:px-6 text-center">
           <h1 className="text-3xl font-bold mb-6">Contribute to Our Database</h1>
           <p className="text-lg mb-8">Please log in to contribute to our database.</p>
-          <Button onClick={() => navigate('/auth?tab=login')}>
-            Log In to Contribute
-          </Button>
+          <Button onClick={() => navigate('/auth?tab=login')}>Log In to Contribute</Button>
         </div>
       </Layout>
     );
@@ -158,61 +167,62 @@ const Contribute = () => {
         <div className="max-w-2xl mx-auto">
           <h1 className="text-3xl font-bold mb-6">Contribute to Our Database</h1>
           <p className="mb-8">
-            Help other readers by submitting information about book content. Your contributions make this resource valuable for the community.
+            Help other readers by submitting information about book content. Your contributions make
+            this resource valuable for the community.
           </p>
-          
+
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-4">
               <div>
                 <Label htmlFor="title">Book Title *</Label>
-                <Input 
-                  id="title" 
-                  name="title" 
-                  value={formData.title} 
-                  onChange={handleInputChange} 
-                  placeholder="Enter the book title" 
-                  required 
+                <Input
+                  id="title"
+                  name="title"
+                  value={formData.title}
+                  onChange={handleInputChange}
+                  placeholder="Enter the book title"
+                  required
                 />
               </div>
-              
+
               <div>
                 <Label htmlFor="author">Author *</Label>
-                <Input 
-                  id="author" 
-                  name="author" 
-                  value={formData.author} 
-                  onChange={handleInputChange} 
-                  placeholder="Enter the author's name" 
-                  required 
+                <Input
+                  id="author"
+                  name="author"
+                  value={formData.author}
+                  onChange={handleInputChange}
+                  placeholder="Enter the author's name"
+                  required
                 />
               </div>
-              
+
               <div>
                 <Label htmlFor="genre">Genre *</Label>
-                <Input 
-                  id="genre" 
-                  name="genre" 
-                  value={formData.genre} 
-                  onChange={handleInputChange} 
-                  placeholder="E.g., Fantasy, Romance, Mystery" 
-                  required 
+                <Input
+                  id="genre"
+                  name="genre"
+                  value={formData.genre}
+                  onChange={handleInputChange}
+                  placeholder="E.g., Fantasy, Romance, Mystery"
+                  required
                 />
               </div>
-              
+
               <div>
                 <Label htmlFor="isbn">ISBN (optional)</Label>
-                <Input 
-                  id="isbn" 
-                  name="isbn" 
-                  value={formData.isbn} 
-                  onChange={handleInputChange} 
-                  placeholder="Enter ISBN if available" 
+                <Input
+                  id="isbn"
+                  name="isbn"
+                  value={formData.isbn}
+                  onChange={handleInputChange}
+                  placeholder="Enter ISBN if available"
                 />
               </div>
-              
+
               <div>
                 <Label htmlFor="smutLevel">Adult Content Level *</Label>
-                <RadioGroup onValueChange={(value) => handleSelectChange(value, 'smutLevel')}>
+                <RadioGroup onValueChange={value => handleSelectChange(value, 'smutLevel')}>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                     <SmutLevelCard
                       title="None"
@@ -249,11 +259,9 @@ const Contribute = () => {
                   </div>
                 </RadioGroup>
               </div>
-              
+
               <div>
-                <Label htmlFor="specificLocations">
-                  Specific Locations (optional)
-                </Label>
+                <Label htmlFor="specificLocations">Specific Locations (optional)</Label>
                 <div className="border rounded-md p-4 mt-2">
                   <table className="w-full mb-3">
                     <thead>
@@ -274,7 +282,9 @@ const Contribute = () => {
                                 type="number"
                                 min="1"
                                 value={location.startChapter}
-                                onChange={(e) => handleLocationChange(index, 'startChapter', e.target.value)}
+                                onChange={e =>
+                                  handleLocationChange(index, 'startChapter', e.target.value)
+                                }
                                 className="w-full"
                               />
                             </td>
@@ -283,7 +293,9 @@ const Contribute = () => {
                                 type="number"
                                 min="1"
                                 value={location.endChapter}
-                                onChange={(e) => handleLocationChange(index, 'endChapter', e.target.value)}
+                                onChange={e =>
+                                  handleLocationChange(index, 'endChapter', e.target.value)
+                                }
                                 className="w-full"
                               />
                             </td>
@@ -292,7 +304,9 @@ const Contribute = () => {
                                 type="number"
                                 min="1"
                                 value={location.startPage}
-                                onChange={(e) => handleLocationChange(index, 'startPage', e.target.value)}
+                                onChange={e =>
+                                  handleLocationChange(index, 'startPage', e.target.value)
+                                }
                                 className="w-full"
                               />
                             </td>
@@ -301,7 +315,9 @@ const Contribute = () => {
                                 type="number"
                                 min="1"
                                 value={location.endPage}
-                                onChange={(e) => handleLocationChange(index, 'endPage', e.target.value)}
+                                onChange={e =>
+                                  handleLocationChange(index, 'endPage', e.target.value)
+                                }
                                 className="w-full"
                               />
                             </td>
@@ -313,7 +329,17 @@ const Contribute = () => {
                                 onClick={() => removeLocation(index)}
                                 className="h-8 w-8 text-red-500 hover:text-red-700"
                               >
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  width="16"
+                                  height="16"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                >
                                   <path d="M3 6h18"></path>
                                   <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path>
                                   <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
@@ -331,13 +357,19 @@ const Contribute = () => {
                       )}
                     </tbody>
                   </table>
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    onClick={addLocation}
-                    className="w-full"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
+                  <Button type="button" variant="outline" onClick={addLocation} className="w-full">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="mr-2"
+                    >
                       <path d="M12 5v14"></path>
                       <path d="M5 12h14"></path>
                     </svg>
@@ -345,22 +377,20 @@ const Contribute = () => {
                   </Button>
                 </div>
               </div>
-              
+
               <div>
-                <Label htmlFor="notes">
-                  Additional Notes (optional)
-                </Label>
-                <Textarea 
-                  id="notes" 
-                  name="notes" 
-                  value={formData.notes} 
-                  onChange={handleInputChange} 
-                  placeholder="Any other relevant information about the book's content" 
+                <Label htmlFor="notes">Additional Notes (optional)</Label>
+                <Textarea
+                  id="notes"
+                  name="notes"
+                  value={formData.notes}
+                  onChange={handleInputChange}
+                  placeholder="Any other relevant information about the book's content"
                   className="min-h-[100px]"
                 />
               </div>
             </div>
-            
+
             <Button type="submit" className="w-full" disabled={isSubmitting}>
               {isSubmitting ? 'Submitting...' : 'Submit Contribution'}
             </Button>

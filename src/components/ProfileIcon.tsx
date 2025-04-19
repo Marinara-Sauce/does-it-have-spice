@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
@@ -14,24 +13,24 @@ import { toast } from 'sonner';
 
 const ProfileIcon = () => {
   const { user, signOut } = useAuth();
-  
+
   if (!user) return null;
-  
+
   const handleSignOut = async () => {
     await signOut();
-    toast.success("Signed out successfully");
+    toast.success('Signed out successfully');
   };
 
   // Get the user's initials for the avatar fallback
   const getInitials = () => {
     if (!user) return 'U';
-    
+
     // Try to get initials from email
     if (user.email) {
       const email = user.email;
       return email.substring(0, 2).toUpperCase();
     }
-    
+
     // Default fallback
     return 'U';
   };
