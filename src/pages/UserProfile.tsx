@@ -24,6 +24,8 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { EditBookModal } from '@/components/EditBookModal';
+import { useIsMobile } from '@/hooks/use-mobile';
+import PaginationControls from '@/components/PaginationControls';
 
 interface Book {
   id: string;
@@ -138,7 +140,6 @@ export function UserProfile() {
         ) : (
           <div className="overflow-x-auto">
             <Table>
-              <TableCaption>A list of your book content submissions</TableCaption>
               <TableHeader>
                 <TableRow>
                   <TableHead>Title</TableHead>
@@ -176,68 +177,13 @@ export function UserProfile() {
                 ))}
               </TableBody>
             </Table>
-            <div className="flex items-center gap-4">
-              {/* Previous Button */}
-              <Button
-                variant="outline"
-                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                disabled={currentPage === 1}
-              >
-                Previous
-              </Button>
-
-              {/* Page Buttons */}
-              <div className="flex items-center gap-1">
-                {currentPage > 3 && (
-                  <>
-                    <Button variant="outline" onClick={() => setCurrentPage(1)}>
-                      1
-                    </Button>
-                    <p className="text-muted-foreground">...</p>
-                  </>
-                )}
-
-                {Array.from({ length: 5 }, (_, index) => {
-                  const page =
-                    currentPage <= 3
-                      ? index + 1
-                      : currentPage >= totalPages - 2
-                        ? totalPages - 4 + index
-                        : currentPage - 2 + index;
-
-                  if (page < 1 || page > totalPages) return null;
-
-                  return (
-                    <Button
-                      key={page}
-                      variant={page === currentPage ? 'default' : 'outline'}
-                      onClick={() => setCurrentPage(page)}
-                      disabled={page === currentPage}
-                    >
-                      {page}
-                    </Button>
-                  );
-                })}
-
-                {currentPage < totalPages - 2 && (
-                  <>
-                    <p className="text-muted-foreground">...</p>
-                    <Button variant="outline" onClick={() => setCurrentPage(totalPages)}>
-                      {totalPages}
-                    </Button>
-                  </>
-                )}
-              </div>
-
-              {/* Next Button */}
-              <Button
-                variant="outline"
-                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                disabled={currentPage === totalPages}
-              >
-                Next
-              </Button>
-            </div>
+            <PaginationControls
+              resultsPerPage={resultsPerPage}
+              setResultsPerPage={setResultsPerPage}
+              currentPage={currentPage}
+              setCurrentPage={setCurrentPage}
+              totalPages={totalPages}
+            />
           </div>
         )}
 
