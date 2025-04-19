@@ -8,9 +8,8 @@ import Layout from '@/components/Layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { RadioGroup } from '@/components/ui/radio-group';
 import SmutLevelCard from '@/components/SmutLevelCard';
 
 interface Location {
@@ -43,8 +42,8 @@ const Contribute = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-   // Add a new empty location row
-   const addLocation = () => {
+  // Add a new empty location row
+  const addLocation = () => {
     setFormData(prev => ({
       ...prev,
       specificLocations: [...prev.specificLocations, { startChapter: '', endChapter: '', startPage: '', endPage: '' }]
@@ -93,10 +92,12 @@ const Contribute = () => {
     try {
       // Format the locations into a string for storage
       const formattedLocations = formData.specificLocations.length > 0
-        ? formData.specificLocations.map(loc => 
-            `Chapters ${loc.startChapter}${loc.endChapter !== loc.startChapter ? '-'+loc.endChapter : ''}, ` +
+        ? formData.specificLocations
+          .filter(loc => loc.startChapter && loc.startPage) // Filter out empty locations
+          .map(loc => 
+            `Chapters ${loc.startChapter}${loc.endChapter !== loc.startChapter ? '-'+loc.endChapter : ''} - ` +
             `Pages ${loc.startPage}${loc.endPage !== loc.startPage ? '-'+loc.endPage : ''}`
-          ).join('; ')
+          ).join(', ')
         : null;
 
       const { data, error } = await supabase.from('books').insert({
