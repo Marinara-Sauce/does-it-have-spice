@@ -1,73 +1,44 @@
-# Welcome to your Lovable project
+# What is this
+Readers come from various audiences and backgrounds, and as such, some may feel uncomfortable when coming across unexpected sexual content (or "smut") while reading. However, researching books prior to purchasing them is tricky due to the potential of coming across plot details or "spoilers" surrounding this content.
 
-## Project info
+"Does it have spice" (or, in a slightly more NSFW name, "Does it have smut") is a website dedicated to informing prospective readers of sexual content in books. This website provides a direct, spoiler-free, non-judgmental "smut level" to books, as well as provides the opportunity for readers to contribute to the database.
 
-**URL**: https://lovable.dev/projects/277435ee-7e17-44df-8495-a3d7426e8214
+Book reports are as generic as possible, using just the title, author, genre, and the "smut level," split into one of four categories. Users can enter the page numbers of certain sections to avoid. This is designed as such to allow readers to research books without any fear of encountering plot details or spoilers.
 
-## How can I edit this code?
+## Inspiration
+The site is inspired by other content-advisory sites such as [doesthedogdie.com](https://www.doesthedogdie.com/).
 
-There are several ways of editing your application.
+# Production
+The site is hosted at [doesithavesmut.com](https://doesithavesmut.com). After merging a PR to `main` a deployment is kicked off by Github Actions to deploy the changes.
 
-**Use Lovable**
+# Technical Details
+I developed this website as a way to use AI tools for generating simple web-apps. The bulk of the features were created using [lovable.dev](https://lovable.dev).
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/277435ee-7e17-44df-8495-a3d7426e8214) and start prompting.
+## Tech Stack
+The front end was created using React and Vite, which was mostly setup through Lovable. The back end is hosted by [Supabase](https://supabase.com).
 
-Changes made via Lovable will be committed automatically to this repo.
+# Getting Started
+## Pre-Reqs
 
-**Use your preferred IDE**
+ - NPM and Node.JS (Version 18 Minimum) must be installed
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## Installation
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
+Follow these steps to setup the repository:
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+# Step 1: Clone the repository
+git clone https://github.com/Marinara-Sauce/does-it-have-spice
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+# Step 2: CD into the directory
+cd does-it-have-spice
 
-# Step 3: Install the necessary dependencies.
+# Step 3: Run npm install
 npm i
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Step 4: Launch the local dev server
 npm run dev
 ```
+The dev server will automatically sync to any changes you've made locally.
 
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/277435ee-7e17-44df-8495-a3d7426e8214) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+## Development
+This project uses ESLint and Prettier for code quality and standards. ESLint follows the recommended ruleset and will fail at any code-style violations detected by Prettier. Both ESLint and Prettier must pass for a PR to be approved.
