@@ -13,6 +13,7 @@ import Contribute from "./pages/Contribute";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import UserProfile from "./pages/UserProfile";
+import Browse from "./pages/Browse";
 import ThemeProvider from "./context/ThemeProvider";
 
 const queryClient = new QueryClient();
