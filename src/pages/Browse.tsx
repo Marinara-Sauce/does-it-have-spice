@@ -1,12 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import Layout from '@/components/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 import { BookList } from '@/components/BookList';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
 import PaginationControls from '@/components/PaginationControls';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
@@ -22,7 +20,6 @@ interface BookStats {
 }
 
 const Browse = () => {
-  const [activeTab, setActiveTab] = useState<string>('smut-level');
   const [resultsPerPage, setResultsPerPage] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -127,7 +124,7 @@ const Browse = () => {
       <h4 className="font-semibold mb-2 text-sm text-muted-foreground">{label}</h4>
       <ToggleGroup
         type="multiple"
-        className="flex flex-col gap-2"
+        className="grid grid-cols-2"
         value={selected}
         onValueChange={value => {
           setSelected(value);
@@ -142,7 +139,7 @@ const Browse = () => {
               value={key}
               aria-label={key}
               variant="outline"
-              className="justify-between px-3"
+              className="justify-between px-3 w-full"
             >
               <span>{key}</span>
               <span className="ml-2 rounded-full bg-muted px-2 py-0.5 text-xs">{count}</span>
@@ -167,7 +164,7 @@ const Browse = () => {
     <Layout>
       <div className="container mx-auto py-8 px-4">
         <div className="flex flex-col md:flex-row gap-6">
-          <div className="w-full md:w-64 space-y-6">
+          <div className="w-full md:w-80 space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle>Browse Books</CardTitle>
