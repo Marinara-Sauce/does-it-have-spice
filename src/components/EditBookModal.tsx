@@ -176,7 +176,7 @@ export function EditBookModal({ book, isOpen, onOpenChange, onSuccess }: EditBoo
     }
   };
 
-  const locationsList = useMemo(() => form.watch('specific_locations'), [form]);
+  const locationsList = form.watch('specific_locations');
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
