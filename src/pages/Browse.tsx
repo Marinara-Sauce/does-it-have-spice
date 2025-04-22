@@ -72,7 +72,7 @@ const Browse = () => {
     },
   });
 
-  // Modified: Custom filter for genres that checks any match in CSV genre lists
+  // Modified: Server-side filtering for both smut levels and genres
   const {
     data: books,
     isLoading: isLoadingBooks,
@@ -86,36 +86,45 @@ const Browse = () => {
       resultsPerPage,
     ],
     queryFn: async () => {
-      let query = supabase
-        .from('aggregated_books')
-        .select('*', { count: 'exact' });
+      try {
+        let query = supabase
+          .from('aggregated_books')
+          .select('*', { count: 'exact' });
 
-      if (selectedSmutLevels.length > 0) {
-        query = query.in('smut_level', selectedSmutLevels.map(level => (level === 'Unknown' ? null : level)));
+        // Filter by smut levels if any are selected
+        if (selectedSmutLevels.length > 0) {
+          query = query.in('smut_level', selectedSmutLevels.map(level => (level === 'Unknown' ? null : level)));
+        }
+
+        // Construct the genre filter with LIKE operators for server-side filtering
+        if (selectedGenres.length > 0) {
+          // Create a filter that checks if any genre in the comma-separated list contains a selected genre
+          const genreFilters = selectedGenres.map(genre => {
+            // Check if the genre is at the beginning, middle, or end of the list
+            return `(genre ILIKE '${genre},%' OR genre ILIKE '%, ${genre},%' OR genre ILIKE '%, ${genre}' OR genre ILIKE '${genre}')`;
+          });
+          
+          // Combine filters with OR logic
+          query = query.or(genreFilters.join(','));
+        }
+
+        // Apply pagination after the filters
+        const { data, count, error } = await query
+          .range((currentPage - 1) * resultsPerPage, currentPage * resultsPerPage - 1)
+          .order('title');
+
+        if (error) throw error;
+
+        // Calculate total pages based on the filtered count
+        const totalCount = count || 0;
+        setTotalPages(Math.ceil(totalCount / resultsPerPage));
+        
+        return data || [];
+      } catch (error) {
+        console.error('Error fetching filtered books:', error);
+        toast.error('Error loading books with the selected filters');
+        return [];
       }
-
-      // We'll fetch candidates and filter for genre intersection in JS
-      query = query
-        .range((currentPage - 1) * resultsPerPage, currentPage * resultsPerPage - 1)
-        .order('title');
-
-      const { data, count, error } = await query;
-
-      if (error) throw error;
-
-      let filtered = data || [];
-
-      if (selectedGenres.length > 0) {
-        filtered = filtered.filter(book => {
-          if (!book.genre) return false;
-          const bookGenres = book.genre.split(',').map((g: string) => g.trim());
-          // If any of the selected genres are present in the book's genres
-          return selectedGenres.some(selected => bookGenres.includes(selected));
-        });
-      }
-
-      setTotalPages(Math.ceil(((selectedGenres.length > 0 ? filtered.length : (count || 0))) / resultsPerPage));
-      return filtered;
     },
   });
 
