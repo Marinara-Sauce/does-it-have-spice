@@ -129,70 +129,39 @@ const Browse = () => {
     setCurrentPage(1);
   };
 
-  // UI: Render both Content Level and Genre filters side by side
-  const renderSideBySideToggles = (
-    bySmutLevel: { [key: string]: number },
-    selectedSmutLevels: string[],
-    setSelectedSmutLevels: (v: string[]) => void,
-    byGenre: { [key: string]: number },
-    selectedGenres: string[],
-    setSelectedGenres: (v: string[]) => void
+  const renderFilterToggles = (
+    data: { [key: string]: number },
+    type: 'genre' | 'smut_level',
+    selected: string[],
+    setSelected: (v: string[]) => void,
+    label: string,
   ) => (
-    <div className="flex flex-col md:flex-row gap-4">
-      <div className="flex-1">
-        <h4 className="font-semibold mb-2 text-sm text-muted-foreground">Content Level</h4>
-        <ToggleGroup
-          type="multiple"
-          className="grid grid-cols-2"
-          value={selectedSmutLevels}
-          onValueChange={value => {
-            setSelectedSmutLevels(value);
-            setCurrentPage(1);
-          }}
-        >
-          {Object.entries(bySmutLevel)
-            .sort(([a], [b]) => a.localeCompare(b))
-            .map(([key, count]) => (
-              <ToggleGroupItem
-                key={key}
-                value={key}
-                aria-label={key}
-                variant="outline"
-                className="justify-between px-3 w-full"
-              >
-                <span>{key}</span>
-                <span className="ml-2 rounded-full bg-muted px-2 py-0.5 text-xs">{count}</span>
-              </ToggleGroupItem>
-            ))}
-        </ToggleGroup>
-      </div>
-      <div className="flex-1">
-        <h4 className="font-semibold mb-2 text-sm text-muted-foreground">Genre</h4>
-        <ToggleGroup
-          type="multiple"
-          className="grid grid-cols-2"
-          value={selectedGenres}
-          onValueChange={value => {
-            setSelectedGenres(value);
-            setCurrentPage(1);
-          }}
-        >
-          {Object.entries(byGenre)
-            .sort(([a], [b]) => a.localeCompare(b))
-            .map(([key, count]) => (
-              <ToggleGroupItem
-                key={key}
-                value={key}
-                aria-label={key}
-                variant="outline"
-                className="justify-between px-3 w-full"
-              >
-                <span>{key}</span>
-                <span className="ml-2 rounded-full bg-muted px-2 py-0.5 text-xs">{count}</span>
-              </ToggleGroupItem>
-            ))}
-        </ToggleGroup>
-      </div>
+    <div className="mb-6 last:mb-0">
+      <h4 className="font-semibold mb-2 text-sm text-muted-foreground">{label}</h4>
+      <ToggleGroup
+        type="multiple"
+        className="grid grid-cols-2"
+        value={selected}
+        onValueChange={value => {
+          setSelected(value);
+          setCurrentPage(1);
+        }}
+      >
+        {Object.entries(data)
+          .sort(([a], [b]) => a.localeCompare(b))
+          .map(([key, count]) => (
+            <ToggleGroupItem
+              key={key}
+              value={key}
+              aria-label={key}
+              variant="outline"
+              className="justify-between px-3 w-full"
+            >
+              <span>{key}</span>
+              <span className="ml-2 rounded-full bg-muted px-2 py-0.5 text-xs">{count}</span>
+            </ToggleGroupItem>
+          ))}
+      </ToggleGroup>
     </div>
   );
 
@@ -220,15 +189,24 @@ const Browse = () => {
                 <p className="text-sm text-muted-foreground mb-4">
                   {stats?.total || 0} books in database
                 </p>
-                {stats?.bySmutLevel && stats?.byGenre &&
-                  renderSideBySideToggles(
-                    stats.bySmutLevel,
-                    selectedSmutLevels,
-                    setSelectedSmutLevels,
-                    stats.byGenre,
-                    selectedGenres,
-                    setSelectedGenres
-                  )}
+                <div>
+                  {stats?.bySmutLevel &&
+                    renderFilterToggles(
+                      stats.bySmutLevel,
+                      'smut_level',
+                      selectedSmutLevels,
+                      setSelectedSmutLevels,
+                      'Content Level',
+                    )}
+                  {stats?.byGenre &&
+                    renderFilterToggles(
+                      stats.byGenre,
+                      'genre',
+                      selectedGenres,
+                      setSelectedGenres,
+                      'Genre',
+                    )}
+                </div>
                 {(selectedSmutLevels.length > 0 || selectedGenres.length > 0) && (
                   <Button onClick={handleClearFilters} size="sm" variant="ghost" className="mt-4 w-full">
                     Clear filters
@@ -254,4 +232,3 @@ const Browse = () => {
 };
 
 export default Browse;
-
