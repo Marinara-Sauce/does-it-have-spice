@@ -1,15 +1,14 @@
-import React, { useEffect, useState } from 'react';
+
+import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import Layout from '@/components/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { BookList } from '@/components/BookList';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
 import PaginationControls from '@/components/PaginationControls';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 
 interface BookStats {
   total: number;
@@ -22,49 +21,41 @@ interface BookStats {
 }
 
 const Browse = () => {
-  const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<string>('smut-level');
-
-  const [totalPages, setTotalPages] = useState(0);
   const [resultsPerPage, setResultsPerPage] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
 
-  const { data: stats, isLoading } = useQuery({
+  const [selectedSmutLevels, setSelectedSmutLevels] = useState<string[]>([]);
+  const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
+
+  const [totalPages, setTotalPages] = useState(0);
+
+  // Modified: Split genres at commas and properly aggregate book counts
+  const { data: stats, isLoading: isLoadingStats } = useQuery({
     queryKey: ['bookStats'],
     queryFn: async (): Promise<BookStats> => {
       try {
-        // Get total count
         const { count: total } = await supabase
           .from('aggregated_books')
           .select('*', { count: 'exact', head: true });
 
-        // Get counts by smut level
-        const { data: smutLevels } = await supabase
+        const { data: allBooks } = await supabase
           .from('aggregated_books')
-          .select('smut_level, count')
-          .select('smut_level, id')
-          .throwOnError();
-
-        // Get counts by genre
-        const { data: genres } = await supabase
-          .from('aggregated_books')
-          .select('genre, id')
-          .not('genre', 'is', null)
+          .select('smut_level, genre')
           .throwOnError();
 
         const bySmutLevel: { [key: string]: number } = {};
         const byGenre: { [key: string]: number } = {};
 
-        // Count smut levels
-        smutLevels?.forEach(book => {
+        allBooks?.forEach(book => {
           const level = book.smut_level || 'Unknown';
           bySmutLevel[level] = (bySmutLevel[level] || 0) + 1;
-        });
 
-        // Count genres
-        genres?.forEach(book => {
           if (book.genre) {
-            byGenre[book.genre] = (byGenre[book.genre] || 0) + 1;
+            book.genre.split(',').map(g => g.trim()).forEach(singleGenre => {
+              if (singleGenre) {
+                byGenre[singleGenre] = (byGenre[singleGenre] || 0) + 1;
+              }
+            });
           }
         });
 
@@ -81,51 +72,109 @@ const Browse = () => {
     },
   });
 
+  // Modified: Server-side filtering for both smut levels and genres
   const {
     data: books,
     isLoading: isLoadingBooks,
     refetch: refetchBooks,
   } = useQuery({
-    queryKey: ['allBooks'],
+    queryKey: [
+      'allBooksFiltered',
+      selectedSmutLevels,
+      selectedGenres,
+      currentPage,
+      resultsPerPage,
+    ],
     queryFn: async () => {
-      const { data, count, error } = await supabase
-        .from('aggregated_books')
-        .select('*', { count: 'exact' })
-        .range((currentPage - 1) * resultsPerPage, currentPage * resultsPerPage - 1)
-        .order('title');
+      try {
+        let query = supabase
+          .from('aggregated_books')
+          .select('*', { count: 'exact' });
 
-      if (error) throw error;
+        // Filter by smut levels if any are selected
+        if (selectedSmutLevels.length > 0) {
+          query = query.in('smut_level', selectedSmutLevels.map(level => (level === 'Unknown' ? null : level)));
+        }
 
-      setTotalPages(Math.ceil(count / resultsPerPage));
-      return data || [];
+        // Construct the genre filter with LIKE operators for server-side filtering
+        if (selectedGenres.length > 0) {
+          // Create a filter that checks if any genre in the comma-separated list contains a selected genre
+          const genreFilters = selectedGenres.map(genre => {
+            // Check if the genre is at the beginning, middle, or end of the list
+            return `(genre ILIKE '${genre},%' OR genre ILIKE '%, ${genre},%' OR genre ILIKE '%, ${genre}' OR genre ILIKE '${genre}')`;
+          });
+          
+          // Combine filters with OR logic
+          query = query.or(genreFilters.join(','));
+        }
+
+        // Apply pagination after the filters
+        const { data, count, error } = await query
+          .range((currentPage - 1) * resultsPerPage, currentPage * resultsPerPage - 1)
+          .order('title');
+
+        if (error) throw error;
+
+        // Calculate total pages based on the filtered count
+        const totalCount = count || 0;
+        setTotalPages(Math.ceil(totalCount / resultsPerPage));
+        
+        return data || [];
+      } catch (error) {
+        console.error('Error fetching filtered books:', error);
+        toast.error('Error loading books with the selected filters');
+        return [];
+      }
     },
   });
 
   useEffect(() => {
     refetchBooks();
-  }, [currentPage, resultsPerPage, refetchBooks]);
+  }, [currentPage, resultsPerPage, selectedSmutLevels, selectedGenres, refetchBooks]);
 
-  const handleFilter = (filter: string, value: string) => {
-    navigate(`/search?${filter}=${encodeURIComponent(value)}`);
+  const handleClearFilters = () => {
+    setSelectedSmutLevels([]);
+    setSelectedGenres([]);
+    setCurrentPage(1);
   };
 
-  const renderFilterButtons = (data: { [key: string]: number }, type: 'genre' | 'smut_level') => {
-    return Object.entries(data)
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([key, count]) => (
-        <Button
-          key={key}
-          variant="outline"
-          className="justify-between"
-          onClick={() => handleFilter(type, key)}
-        >
-          <span>{key}</span>
-          <span className="ml-2 rounded-full bg-muted px-2 py-0.5 text-xs">{count}</span>
-        </Button>
-      ));
-  };
+  const renderFilterToggles = (
+    data: { [key: string]: number },
+    type: 'genre' | 'smut_level',
+    selected: string[],
+    setSelected: (v: string[]) => void,
+    label: string,
+  ) => (
+    <div className="mb-6 last:mb-0">
+      <h4 className="font-semibold mb-2 text-sm text-muted-foreground">{label}</h4>
+      <ToggleGroup
+        type="multiple"
+        className="grid grid-cols-2"
+        value={selected}
+        onValueChange={value => {
+          setSelected(value);
+          setCurrentPage(1);
+        }}
+      >
+        {Object.entries(data)
+          .sort(([a], [b]) => a.localeCompare(b))
+          .map(([key, count]) => (
+            <ToggleGroupItem
+              key={key}
+              value={key}
+              aria-label={key}
+              variant="outline"
+              className="justify-between px-3 w-full"
+            >
+              <span>{key}</span>
+              <span className="ml-2 rounded-full bg-muted px-2 py-0.5 text-xs">{count}</span>
+            </ToggleGroupItem>
+          ))}
+      </ToggleGroup>
+    </div>
+  );
 
-  if (isLoading || isLoadingBooks) {
+  if (isLoadingStats || isLoadingBooks) {
     return (
       <Layout>
         <div className="container mx-auto py-8 animate-pulse">
@@ -140,8 +189,7 @@ const Browse = () => {
     <Layout>
       <div className="container mx-auto py-8 px-4">
         <div className="flex flex-col md:flex-row gap-6">
-          {/* Filters Panel */}
-          <div className="w-full md:w-64 space-y-6">
+          <div className="w-full md:w-80 space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle>Browse Books</CardTitle>
@@ -150,35 +198,32 @@ const Browse = () => {
                 <p className="text-sm text-muted-foreground mb-4">
                   {stats?.total || 0} books in database
                 </p>
-                <Tabs defaultValue="smut-level" className="w-full" onValueChange={setActiveTab}>
-                  <TabsList className="w-full mb-4">
-                    <TabsTrigger value="smut-level" className="flex-1">
-                      Content Level
-                    </TabsTrigger>
-                    <TabsTrigger value="genre" className="flex-1">
-                      Genre
-                    </TabsTrigger>
-                  </TabsList>
-                  <TabsContent value="smut-level" className="mt-0">
-                    <ScrollArea className="h-[400px]">
-                      <div className="flex flex-col gap-2">
-                        {stats?.bySmutLevel && renderFilterButtons(stats.bySmutLevel, 'smut_level')}
-                      </div>
-                    </ScrollArea>
-                  </TabsContent>
-                  <TabsContent value="genre" className="mt-0">
-                    <ScrollArea className="h-[400px]">
-                      <div className="flex flex-col gap-2">
-                        {stats?.byGenre && renderFilterButtons(stats.byGenre, 'genre')}
-                      </div>
-                    </ScrollArea>
-                  </TabsContent>
-                </Tabs>
+                <div>
+                  {stats?.bySmutLevel &&
+                    renderFilterToggles(
+                      stats.bySmutLevel,
+                      'smut_level',
+                      selectedSmutLevels,
+                      setSelectedSmutLevels,
+                      'Content Level',
+                    )}
+                  {stats?.byGenre &&
+                    renderFilterToggles(
+                      stats.byGenre,
+                      'genre',
+                      selectedGenres,
+                      setSelectedGenres,
+                      'Genre',
+                    )}
+                </div>
+                {(selectedSmutLevels.length > 0 || selectedGenres.length > 0) && (
+                  <Button onClick={handleClearFilters} size="sm" variant="ghost" className="mt-4 w-full">
+                    Clear filters
+                  </Button>
+                )}
               </CardContent>
             </Card>
           </div>
-
-          {/* Books List */}
           <div className="flex-1">
             <BookList books={books || []} isLoading={isLoadingBooks} />
             <PaginationControls
