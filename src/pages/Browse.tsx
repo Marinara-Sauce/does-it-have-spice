@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import Layout from '@/components/Layout';
@@ -51,11 +50,14 @@ const Browse = () => {
           bySmutLevel[level] = (bySmutLevel[level] || 0) + 1;
 
           if (book.genre) {
-            book.genre.split(',').map(g => g.trim()).forEach(singleGenre => {
-              if (singleGenre) {
-                byGenre[singleGenre] = (byGenre[singleGenre] || 0) + 1;
-              }
-            });
+            book.genre
+              .split(',')
+              .map(g => g.trim())
+              .forEach(singleGenre => {
+                if (singleGenre) {
+                  byGenre[singleGenre] = (byGenre[singleGenre] || 0) + 1;
+                }
+              });
           }
         });
 
@@ -78,22 +80,17 @@ const Browse = () => {
     isLoading: isLoadingBooks,
     refetch: refetchBooks,
   } = useQuery({
-    queryKey: [
-      'allBooksFiltered',
-      selectedSmutLevels,
-      selectedGenres,
-      currentPage,
-      resultsPerPage,
-    ],
+    queryKey: ['allBooksFiltered', selectedSmutLevels, selectedGenres, currentPage, resultsPerPage],
     queryFn: async () => {
       try {
-        let query = supabase
-          .from('aggregated_books')
-          .select('*', { count: 'exact' });
+        let query = supabase.from('aggregated_books').select('*', { count: 'exact' });
 
         // Filter by smut levels if any are selected
         if (selectedSmutLevels.length > 0) {
-          query = query.in('smut_level', selectedSmutLevels.map(level => (level === 'Unknown' ? null : level)));
+          query = query.in(
+            'smut_level',
+            selectedSmutLevels.map(level => (level === 'Unknown' ? null : level)),
+          );
         }
 
         // Construct the genre filter with LIKE operators for server-side filtering
@@ -103,7 +100,7 @@ const Browse = () => {
             // Check if the genre is at the beginning, middle, or end of the list
             return `(genre ILIKE '${genre},%' OR genre ILIKE '%, ${genre},%' OR genre ILIKE '%, ${genre}' OR genre ILIKE '${genre}')`;
           });
-          
+
           // Combine filters with OR logic
           query = query.or(genreFilters.join(','));
         }
@@ -118,7 +115,7 @@ const Browse = () => {
         // Calculate total pages based on the filtered count
         const totalCount = count || 0;
         setTotalPages(Math.ceil(totalCount / resultsPerPage));
-        
+
         return data || [];
       } catch (error) {
         console.error('Error fetching filtered books:', error);
@@ -217,7 +214,12 @@ const Browse = () => {
                     )}
                 </div>
                 {(selectedSmutLevels.length > 0 || selectedGenres.length > 0) && (
-                  <Button onClick={handleClearFilters} size="sm" variant="ghost" className="mt-4 w-full">
+                  <Button
+                    onClick={handleClearFilters}
+                    size="sm"
+                    variant="ghost"
+                    className="mt-4 w-full"
+                  >
                     Clear filters
                   </Button>
                 )}
