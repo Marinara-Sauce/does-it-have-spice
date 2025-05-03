@@ -93,18 +93,6 @@ const Browse = () => {
           );
         }
 
-        // Construct the genre filter with LIKE operators for server-side filtering
-        if (selectedGenres.length > 0) {
-          // Create a filter that checks if any genre in the comma-separated list contains a selected genre
-          const genreFilters = selectedGenres.map(genre => {
-            // Check if the genre is at the beginning, middle, or end of the list
-            return `(genre ILIKE '${genre},%' OR genre ILIKE '%, ${genre},%' OR genre ILIKE '%, ${genre}' OR genre ILIKE '${genre}')`;
-          });
-
-          // Combine filters with OR logic
-          query = query.or(genreFilters.join(','));
-        }
-
         // Apply pagination after the filters
         const { data, count, error } = await query
           .range((currentPage - 1) * resultsPerPage, currentPage * resultsPerPage - 1)
@@ -120,6 +108,31 @@ const Browse = () => {
       } catch (error) {
         console.error('Error fetching filtered books:', error);
         toast.error('Error loading books with the selected filters');
+        return [];
+      }
+    },
+  });
+
+  const {
+    data: genres,
+    isLoading: isLoadingGenres,
+    refetch: refetchGenres,
+  } = useQuery({
+    queryKey: ['bookGenres'],
+    queryFn: async () => {
+      try {
+        const { data, error } = await supabase
+          .from('aggregated_genres')
+          .select('*')
+          .order('genre-count', { ascending: false });
+
+        if (error) throw error;
+
+        console.log(data);
+        return data || [];
+      } catch (error) {
+        console.error('Error fetching genres:', error);
+        toast.error('Error loading genres');
         return [];
       }
     },

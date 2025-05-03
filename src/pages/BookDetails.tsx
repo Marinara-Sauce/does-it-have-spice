@@ -117,7 +117,7 @@ const BookDetails = () => {
                         {book.genre && (
                           <div className="flex items-center gap-2 text-sm">
                             <BookOpen size={16} className="text-muted-foreground" />
-                            <span className="font-medium">Genre:</span>
+                            <span className="font-medium">Genres:</span>
                             <span>{book.genre}</span>
                           </div>
                         )}
