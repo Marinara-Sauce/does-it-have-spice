@@ -124,11 +124,10 @@ const Browse = () => {
         const { data, error } = await supabase
           .from('aggregated_genres')
           .select('*')
-          .order('genre-count', { ascending: false });
+          .eq('is_ignored', false)
+          .order('genre_count', { ascending: false });
 
         if (error) throw error;
-
-        console.log(data);
         return data || [];
       } catch (error) {
         console.error('Error fetching genres:', error);
@@ -217,9 +216,9 @@ const Browse = () => {
                       setSelectedSmutLevels,
                       'Content Level',
                     )}
-                  {stats?.byGenre &&
+                  {genres &&
                     renderFilterToggles(
-                      stats.byGenre,
+                      genres,
                       'genre',
                       selectedGenres,
                       setSelectedGenres,
