@@ -7,12 +7,13 @@ import { BookOpen, ChevronLeft, BookText } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import ContentWarningList from '@/components/ContentWarningList';
+import { toTitleCase } from '@/lib/utils';
 
 type Book = {
   id: string;
   title: string;
   author: string;
-  genre?: string;
+  genre: string[];
   smut_level: string;
   specific_locations: string | null;
   notes: string | null;
@@ -115,10 +116,15 @@ const BookDetails = () => {
                       <h3 className="text-lg font-medium mb-2">Book Information</h3>
                       <div className="space-y-2">
                         {book.genre && (
-                          <div className="flex items-center gap-2 text-sm">
-                            <BookOpen size={16} className="text-muted-foreground" />
-                            <span className="font-medium">Genre:</span>
-                            <span>{book.genre}</span>
+                          <div className="flex items-start gap-2 text-sm">
+                            <div>
+                              <span className="font-medium">Genres:</span>
+                              <ul className="list-disc list-inside">
+                                {book.genre.map((g, index) => (
+                                  <>{g ? <li key={index}>{toTitleCase(g)}</li> : null}</>
+                                ))}
+                              </ul>
+                            </div>
                           </div>
                         )}
 
@@ -139,13 +145,6 @@ const BookDetails = () => {
                         )}
                       </div>
                     </div>
-
-                    {book.notes && (
-                      <div className="mb-6">
-                        <h3 className="text-lg font-medium mb-2">Notes</h3>
-                        <p className="text-sm">{book.notes}</p>
-                      </div>
-                    )}
                   </div>
 
                   <div>

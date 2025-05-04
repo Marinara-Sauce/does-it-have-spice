@@ -16,3 +16,6 @@ README.md
 
 # Ignore the data-scraper
 data-scraper
+
+# Ignore generated types
+src/integrations/supabase/types.ts

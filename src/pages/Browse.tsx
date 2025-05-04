@@ -8,13 +8,12 @@ import { BookList } from '@/components/BookList';
 import { toast } from 'sonner';
 import PaginationControls from '@/components/PaginationControls';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { toTitleCase } from '@/lib/utils';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface BookStats {
   total: number;
   bySmutLevel: {
-    [key: string]: number;
-  };
-  byGenre: {
     [key: string]: number;
   };
 }
@@ -26,6 +25,7 @@ const Browse = () => {
   const [selectedSmutLevels, setSelectedSmutLevels] = useState<string[]>([]);
   const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
 
+  const [genreLimit, setGenreLimit] = useState(10);
   const [totalPages, setTotalPages] = useState(0);
 
   // Modified: Split genres at commas and properly aggregate book counts
@@ -43,33 +43,20 @@ const Browse = () => {
           .throwOnError();
 
         const bySmutLevel: { [key: string]: number } = {};
-        const byGenre: { [key: string]: number } = {};
 
         allBooks?.forEach(book => {
           const level = book.smut_level || 'Unknown';
           bySmutLevel[level] = (bySmutLevel[level] || 0) + 1;
-
-          if (book.genre) {
-            book.genre
-              .split(',')
-              .map(g => g.trim())
-              .forEach(singleGenre => {
-                if (singleGenre) {
-                  byGenre[singleGenre] = (byGenre[singleGenre] || 0) + 1;
-                }
-              });
-          }
         });
 
         return {
           total: total || 0,
           bySmutLevel,
-          byGenre,
         };
       } catch (error) {
         console.error('Error fetching book stats:', error);
         toast.error('Error loading book statistics');
-        return { total: 0, bySmutLevel: {}, byGenre: {} };
+        return { total: 0, bySmutLevel: {} };
       }
     },
   });
@@ -87,22 +74,11 @@ const Browse = () => {
 
         // Filter by smut levels if any are selected
         if (selectedSmutLevels.length > 0) {
-          query = query.in(
-            'smut_level',
-            selectedSmutLevels.map(level => (level === 'Unknown' ? null : level)),
-          );
+          query = query.in('smut_level', selectedSmutLevels);
         }
 
-        // Construct the genre filter with LIKE operators for server-side filtering
         if (selectedGenres.length > 0) {
-          // Create a filter that checks if any genre in the comma-separated list contains a selected genre
-          const genreFilters = selectedGenres.map(genre => {
-            // Check if the genre is at the beginning, middle, or end of the list
-            return `(genre ILIKE '${genre},%' OR genre ILIKE '%, ${genre},%' OR genre ILIKE '%, ${genre}' OR genre ILIKE '${genre}')`;
-          });
-
-          // Combine filters with OR logic
-          query = query.or(genreFilters.join(','));
+          query = query.contains('genre', selectedGenres);
         }
 
         // Apply pagination after the filters
@@ -125,6 +101,39 @@ const Browse = () => {
     },
   });
 
+  function increaseGenreLimit() {
+    setGenreLimit(prevLimit => prevLimit + 10);
+  }
+
+  const { data: genres, isLoading: isLoadingGenres } = useQuery({
+    queryKey: ['bookGenres', genreLimit],
+    queryFn: async () => {
+      try {
+        const { data, error } = await supabase
+          .from('aggregated_genres')
+          .select('*')
+          .eq('is_ignored', false)
+          .order('genre_count', { ascending: false })
+          .limit(genreLimit);
+
+        if (error) throw error;
+
+        const genresList: Record<string, number> = {};
+        data?.forEach(genre => {
+          if (genre.genre && genre.genre_count) {
+            genresList[genre.genre] = genre.genre_count;
+          }
+        });
+
+        return genresList || {};
+      } catch (error) {
+        console.error('Error fetching genres:', error);
+        toast.error('Error loading genres');
+        return {};
+      }
+    },
+  });
+
   useEffect(() => {
     refetchBooks();
   }, [currentPage, resultsPerPage, selectedSmutLevels, selectedGenres, refetchBooks]);
@@ -137,13 +146,14 @@ const Browse = () => {
 
   const renderFilterToggles = (
     data: { [key: string]: number },
-    type: 'genre' | 'smut_level',
     selected: string[],
     setSelected: (v: string[]) => void,
     label: string,
+    loading: boolean = false,
   ) => (
     <div className="mb-6 last:mb-0">
       <h4 className="font-semibold mb-2 text-sm text-muted-foreground">{label}</h4>
+      {loading && <Skeleton className="h-4 w-full mb-2" />}
       <ToggleGroup
         type="multiple"
         className="grid grid-cols-2"
@@ -163,7 +173,7 @@ const Browse = () => {
               variant="outline"
               className="justify-between px-3 w-full"
             >
-              <span>{key}</span>
+              <span className="truncate">{toTitleCase(key)}</span>
               <span className="ml-2 rounded-full bg-muted px-2 py-0.5 text-xs">{count}</span>
             </ToggleGroupItem>
           ))}
@@ -171,22 +181,11 @@ const Browse = () => {
     </div>
   );
 
-  if (isLoadingStats || isLoadingBooks) {
-    return (
-      <Layout>
-        <div className="container mx-auto py-8 animate-pulse">
-          <div className="h-8 w-48 bg-muted rounded mb-4"></div>
-          <div className="h-24 bg-muted rounded"></div>
-        </div>
-      </Layout>
-    );
-  }
-
   return (
     <Layout>
       <div className="container mx-auto py-8 px-4">
         <div className="flex flex-col md:flex-row gap-6">
-          <div className="w-full md:w-80 space-y-6">
+          <div className="w-full md:w-1/3">
             <Card>
               <CardHeader>
                 <CardTitle>Browse Books</CardTitle>
@@ -199,19 +198,22 @@ const Browse = () => {
                   {stats?.bySmutLevel &&
                     renderFilterToggles(
                       stats.bySmutLevel,
-                      'smut_level',
                       selectedSmutLevels,
                       setSelectedSmutLevels,
                       'Content Level',
+                      isLoadingStats,
                     )}
-                  {stats?.byGenre &&
+                  {genres &&
                     renderFilterToggles(
-                      stats.byGenre,
-                      'genre',
+                      genres,
                       selectedGenres,
                       setSelectedGenres,
                       'Genre',
+                      isLoadingGenres,
                     )}
+                  <Button onClick={increaseGenreLimit} className="w-full" variant="ghost">
+                    Show more genres
+                  </Button>
                 </div>
                 {(selectedSmutLevels.length > 0 || selectedGenres.length > 0) && (
                   <Button
@@ -227,6 +229,7 @@ const Browse = () => {
             </Card>
           </div>
           <div className="flex-1">
+            {isLoadingBooks && <Skeleton className="h-4 w-48 mb-4" />}
             <BookList books={books || []} isLoading={isLoadingBooks} />
             <PaginationControls
               resultsPerPage={resultsPerPage}
