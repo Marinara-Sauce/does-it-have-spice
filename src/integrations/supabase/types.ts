@@ -154,7 +154,7 @@ export type Database = {
         Row: {
           author: string | null
           contribution_count: number | null
-          genre: string | null
+          genre: string[] | null
           id: string | null
           isbn: string | null
           notes: string | null
