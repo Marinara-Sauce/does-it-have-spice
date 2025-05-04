@@ -14,6 +14,11 @@ The site is hosted at [doesithavesmut.com](https://doesithavesmut.com). After me
 # Technical Details
 I developed this website as a way to use AI tools for generating simple web-apps. The bulk of the features were created using [lovable.dev](https://lovable.dev).
 
+## Data Collection
+Despite being an "open database," initial book reports were contributed using the [OpenLibrary](https://openlibrary.org/) and GPT 3.5. The script to collect data can be found in `scripts/data-scraper`. To start, the script makes an API call to OpenLibrary to fetch random books of a certain genre. Each book is then processed by GPT 3.5, which is given guidance on how to categorize books based on their content and which "sections to avoid." This information is then inserted directly into the database.
+
+The intent of this method is not to stand as a permanent solution but to offer an initial collection of books. Users can still contribute additional reports on their own.
+
 ## Tech Stack
 The front end was created using React and Vite, which was mostly setup through Lovable. The back end is hosted by [Supabase](https://supabase.com).
 
@@ -41,4 +46,4 @@ npm run dev
 The dev server will automatically sync to any changes you've made locally.
 
 ## Development
-This project uses ESLint and Prettier for code quality and standards. ESLint follows the recommended ruleset and will fail at any code-style violations detected by Prettier. Both ESLint and Prettier must pass for a PR to be approved.
+Contributions to the UI are always welcome! ESLint and Prettier is used to enforce code styling/quality.
