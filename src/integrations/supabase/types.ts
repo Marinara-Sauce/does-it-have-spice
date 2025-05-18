@@ -50,6 +50,13 @@ export type Database = {
             foreignKeyName: "book-to-genres_genre_id_fkey"
             columns: ["genre_id"]
             isOneToOne: false
+            referencedRelation: "available_genres"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "book-to-genres_genre_id_fkey"
+            columns: ["genre_id"]
+            isOneToOne: false
             referencedRelation: "genres"
             referencedColumns: ["id"]
           },
@@ -169,6 +176,21 @@ export type Database = {
           genre: string | null
           genre_count: number | null
           is_ignored: boolean | null
+        }
+        Relationships: []
+      }
+      available_genres: {
+        Row: {
+          genre: string | null
+          id: number | null
+        }
+        Insert: {
+          genre?: string | null
+          id?: number | null
+        }
+        Update: {
+          genre?: string | null
+          id?: number | null
         }
         Relationships: []
       }

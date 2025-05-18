@@ -1,3 +1,4 @@
+
 import { useState, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -6,10 +7,10 @@ import { useAuth } from '@/hooks/useAuth';
 import Layout from '@/components/Layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { RadioGroup } from '@/components/ui/radio-group';
 import SmutLevelCard from '@/components/SmutLevelCard';
+import GenreSelector from '@/components/GenreSelector';
 
 interface Location {
   startChapter: string;
@@ -24,11 +25,10 @@ const Contribute = () => {
   const [formData, setFormData] = useState({
     title: '',
     author: '',
-    genre: '',
+    genres: [] as string[],
     isbn: '',
     smutLevel: '',
-    specificLocations: [],
-    notes: '',
+    specificLocations: [] as Location[],
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -39,6 +39,10 @@ const Contribute = () => {
 
   const handleSelectChange = (value: string, name: string) => {
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleGenresChange = (genres: string[]) => {
+    setFormData(prev => ({ ...prev, genres }));
   };
 
   // Add a new empty location row
@@ -84,7 +88,7 @@ const Contribute = () => {
       return;
     }
 
-    if (!formData.title || !formData.author || !formData.genre || !formData.smutLevel) {
+    if (!formData.title || !formData.author || formData.genres.length === 0 || !formData.smutLevel) {
       toast.error('Please fill in all required fields');
       return;
     }
@@ -104,14 +108,17 @@ const Contribute = () => {
               .join('; ')
           : null;
 
+      // Join genres with commas for storage in the database
+      const genreString = formData.genres.join(', ');
+
       const { data, error } = await supabase.from('books').insert({
         title: formData.title,
         author: formData.author,
-        genre: formData.genre,
+        genre: genreString,
         isbn: formData.isbn || null,
         smut_level: formData.smutLevel,
         specific_locations: formattedLocations,
-        notes: formData.notes || null,
+        notes: null,
         created_by: user.id,
       });
 
@@ -121,11 +128,10 @@ const Contribute = () => {
       setFormData({
         title: '',
         author: '',
-        genre: '',
+        genres: [],
         isbn: '',
         smutLevel: '',
         specificLocations: [],
-        notes: '',
       });
 
       // Navigate to search results for the book just added
@@ -191,14 +197,10 @@ const Contribute = () => {
               </div>
 
               <div>
-                <Label htmlFor="genre">Genre *</Label>
-                <Input
-                  id="genre"
-                  name="genre"
-                  value={formData.genre}
-                  onChange={handleInputChange}
-                  placeholder="E.g., Fantasy, Romance, Mystery"
-                  required
+                <Label htmlFor="genres">Genres *</Label>
+                <GenreSelector 
+                  selectedGenres={formData.genres}
+                  onChange={handleGenresChange}
                 />
               </div>
 
@@ -369,18 +371,6 @@ const Contribute = () => {
                     Add Section
                   </Button>
                 </div>
-              </div>
-
-              <div>
-                <Label htmlFor="notes">Additional Notes (optional)</Label>
-                <Textarea
-                  id="notes"
-                  name="notes"
-                  value={formData.notes}
-                  onChange={handleInputChange}
-                  placeholder="Any other relevant information about the book's content"
-                  className="min-h-[100px]"
-                />
               </div>
             </div>
 

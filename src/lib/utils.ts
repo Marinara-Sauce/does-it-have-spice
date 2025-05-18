@@ -1,3 +1,4 @@
+
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -12,4 +13,13 @@ export function toTitleCase(input?: string | null) {
     .split(' ')
     .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
     .join(' ');
+}
+
+export function isSystemDarkMode() {
+  return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+}
+
+export function isDarkMode(theme: string | undefined) {
+  if (!theme) return isSystemDarkMode();
+  return theme === 'dark' || (theme === 'system' && isSystemDarkMode());
 }
