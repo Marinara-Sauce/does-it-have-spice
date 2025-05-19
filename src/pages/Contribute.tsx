@@ -1,4 +1,3 @@
-
 import { useState, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -11,6 +10,12 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup } from '@/components/ui/radio-group';
 import SmutLevelCard from '@/components/SmutLevelCard';
 import GenreSelector from '@/components/GenreSelector';
+
+export interface Genre {
+  genre_id: number;
+  genre: string;
+  genre_count: number;
+}
 
 interface Location {
   startChapter: string;
@@ -25,7 +30,7 @@ const Contribute = () => {
   const [formData, setFormData] = useState({
     title: '',
     author: '',
-    genres: [] as string[],
+    genres: [] as Genre[],
     isbn: '',
     smutLevel: '',
     specificLocations: [] as Location[],
@@ -41,7 +46,7 @@ const Contribute = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleGenresChange = (genres: string[]) => {
+  const handleGenresChange = (genres: Genre[]) => {
     setFormData(prev => ({ ...prev, genres }));
   };
 
@@ -88,7 +93,12 @@ const Contribute = () => {
       return;
     }
 
-    if (!formData.title || !formData.author || formData.genres.length === 0 || !formData.smutLevel) {
+    if (
+      !formData.title ||
+      !formData.author ||
+      formData.genres.length === 0 ||
+      !formData.smutLevel
+    ) {
       toast.error('Please fill in all required fields');
       return;
     }
@@ -108,21 +118,31 @@ const Contribute = () => {
               .join('; ')
           : null;
 
-      // Join genres with commas for storage in the database
-      const genreString = formData.genres.join(', ');
-
-      const { data, error } = await supabase.from('books').insert({
-        title: formData.title,
-        author: formData.author,
-        genre: genreString,
-        isbn: formData.isbn || null,
-        smut_level: formData.smutLevel,
-        specific_locations: formattedLocations,
-        notes: null,
-        created_by: user.id,
-      });
+      const { data, error } = await supabase
+        .from('books')
+        .insert({
+          title: formData.title,
+          author: formData.author,
+          isbn: formData.isbn || null,
+          smut_level: formData.smutLevel,
+          specific_locations: formattedLocations,
+          notes: null,
+          created_by: user.id,
+        })
+        .select();
 
       if (error) throw error;
+
+      // Once we have our books, we can now start inserting genres
+      const booksToGenres = formData.genres.map(genre => ({
+        book_id: data[0]!.id,
+        genre_id: genre.genre_id,
+        created_by: user.id,
+      }));
+
+      const { error: genreError } = await supabase.from('book_to_genres').insert(booksToGenres);
+
+      if (genreError) throw genreError;
 
       toast.success('Thank you for your contribution!');
       setFormData({
@@ -198,10 +218,7 @@ const Contribute = () => {
 
               <div>
                 <Label htmlFor="genres">Genres *</Label>
-                <GenreSelector 
-                  selectedGenres={formData.genres}
-                  onChange={handleGenresChange}
-                />
+                <GenreSelector selectedGenres={formData.genres} onChange={handleGenresChange} />
               </div>
 
               <div>

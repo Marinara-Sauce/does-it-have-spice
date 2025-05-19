@@ -175,9 +175,25 @@ export type Database = {
         Row: {
           genre: string | null
           genre_count: number | null
+          genre_id: number | null
           is_ignored: boolean | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "book-to-genres_genre_id_fkey"
+            columns: ["genre_id"]
+            isOneToOne: false
+            referencedRelation: "available_genres"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "book-to-genres_genre_id_fkey"
+            columns: ["genre_id"]
+            isOneToOne: false
+            referencedRelation: "genres"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       available_genres: {
         Row: {
