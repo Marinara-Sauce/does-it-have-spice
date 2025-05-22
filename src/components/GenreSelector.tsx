@@ -137,7 +137,7 @@ export default function GenreSelector({ selectedGenres, onChange }: GenreSelecto
         ))}
       </div>
 
-      <Command ref={commandRef} className="rounded-lg border shadow-md">
+      <Command ref={commandRef} className="rounded-md border">
         <CommandInput
           placeholder="Search genres..."
           value={search}

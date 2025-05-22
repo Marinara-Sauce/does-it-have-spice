@@ -45,7 +45,6 @@ export default function SmutLevelCard({
                 ? 'border-gray-700 hover:bg-gray-900'
                 : 'hover:bg-slate-50'
           }
-          ${isDark ? 'bg-black' : 'bg-white'}
         `}
       >
         <CardContent />

@@ -217,7 +217,7 @@ const Contribute = () => {
               </div>
 
               <div>
-                <Label htmlFor="genres">Genres *</Label>
+                <Label htmlFor="genres">Genres</Label>
                 <GenreSelector selectedGenres={formData.genres} onChange={handleGenresChange} />
               </div>
 
