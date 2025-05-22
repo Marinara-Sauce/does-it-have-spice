@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   CommandEmpty,
@@ -50,7 +51,7 @@ export default function GenreSelector({ selectedGenres, onChange }: GenreSelecto
         return;
       }
 
-      if (data.length < MAX_GENRES_PER_PAGE) {
+      if (!data || data.length < MAX_GENRES_PER_PAGE) {
         setHasMore(false);
       }
 

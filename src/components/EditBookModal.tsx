@@ -1,3 +1,4 @@
+
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { supabase } from '@/integrations/supabase/client';
@@ -44,7 +45,7 @@ interface Book {
   author: string;
   genre: string | null;
   smut_level: string;
-  specific_locations: string | null;
+  specific_locations: string[] | null;
   notes: string | null;
   isbn: string | null;
   created_at: string;
@@ -67,12 +68,13 @@ interface EditBookModalProps {
   onSuccess: () => void;
 }
 
-function parseFormattedLocations(formattedLocations: string): Location[] {
-  if (!formattedLocations) return [];
+function parseFormattedLocations(formattedLocations: string[] | null): Location[] {
+  if (!formattedLocations || formattedLocations.length === 0) return [];
 
-  return formattedLocations.split(',').map(section => {
-    const chapterMatch = section.match(/Chapters (\d+)(?:-(\d+))?/);
-    const pageMatch = section.match(/Pages (\d+)(?:-(\d+))?/);
+  return formattedLocations.map(section => {
+    const trimmedSection = section.trim();
+    const chapterMatch = trimmedSection.match(/Chapters (\d+)(?:-(\d+))?/);
+    const pageMatch = trimmedSection.match(/Pages (\d+)(?:-(\d+))?/);
 
     return {
       startChapter: chapterMatch ? chapterMatch[1] : '',
@@ -146,7 +148,6 @@ export function EditBookModal({ book, isOpen, onOpenChange, onSuccess }: EditBoo
                 `Chapters ${loc.startChapter}${loc.endChapter !== loc.startChapter ? '-' + loc.endChapter : ''} - ` +
                 `Pages ${loc.startPage}${loc.endPage !== loc.startPage ? '-' + loc.endPage : ''}`,
             )
-            .join(', ')
         : null;
 
     try {

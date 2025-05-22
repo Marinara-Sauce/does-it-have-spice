@@ -1,13 +1,16 @@
+
 import { AlertTriangle } from 'lucide-react';
 
 interface ContentWarningListProps {
-  locations: string;
+  locations: string[] | string;
 }
 
 const ContentWarningList = ({ locations }: ContentWarningListProps) => {
-  if (!locations) return null;
+  if (!locations || (Array.isArray(locations) && locations.length === 0)) return null;
 
-  const warningList = locations.split(',').map(item => item.trim());
+  // Handle both string and array format for backward compatibility
+  const warningList = Array.isArray(locations) ? locations.map(item => item.trim()) : 
+    locations.split(',').map(item => item.trim());
 
   return (
     <div className="mt-4 p-3 bg-muted rounded-md">

@@ -1,3 +1,4 @@
+
 import { useState, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -106,16 +107,16 @@ const Contribute = () => {
     setIsSubmitting(true);
 
     try {
-      // Format the locations into a string for storage
+      // Format the locations into an array for storage
       const formattedLocations =
         formData.specificLocations.length > 0
           ? formData.specificLocations
+              .filter(loc => loc.startChapter && loc.startPage) // Filter out empty locations
               .map(
                 loc =>
                   `Chapters ${loc.startChapter}${loc.endChapter !== loc.startChapter ? '-' + loc.endChapter : ''}, ` +
                   `Pages ${loc.startPage}${loc.endPage !== loc.startPage ? '-' + loc.endPage : ''}`,
               )
-              .join('; ')
           : null;
 
       const { data, error } = await supabase

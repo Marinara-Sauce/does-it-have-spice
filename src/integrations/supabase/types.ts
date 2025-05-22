@@ -43,14 +43,14 @@ export type Database = {
             foreignKeyName: "book-to-genres_book_id_fkey"
             columns: ["book_id"]
             isOneToOne: false
-            referencedRelation: "books"
+            referencedRelation: "aggregated_books"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "book-to-genres_genre_id_fkey"
-            columns: ["genre_id"]
+            foreignKeyName: "book-to-genres_book_id_fkey"
+            columns: ["book_id"]
             isOneToOne: false
-            referencedRelation: "available_genres"
+            referencedRelation: "books"
             referencedColumns: ["id"]
           },
           {
@@ -72,7 +72,7 @@ export type Database = {
           isbn: string | null
           notes: string | null
           smut_level: string
-          specific_locations: string | null
+          specific_locations: string[] | null
           title: string
         }
         Insert: {
@@ -84,7 +84,7 @@ export type Database = {
           isbn?: string | null
           notes?: string | null
           smut_level: string
-          specific_locations?: string | null
+          specific_locations?: string[] | null
           title: string
         }
         Update: {
@@ -96,7 +96,7 @@ export type Database = {
           isbn?: string | null
           notes?: string | null
           smut_level?: string
-          specific_locations?: string | null
+          specific_locations?: string[] | null
           title?: string
         }
         Relationships: []
@@ -166,7 +166,7 @@ export type Database = {
           isbn: string | null
           notes: string | null
           smut_level: string | null
-          specific_locations: string | null
+          specific_locations: string[] | null
           title: string | null
         }
         Relationships: []
@@ -183,32 +183,10 @@ export type Database = {
             foreignKeyName: "book-to-genres_genre_id_fkey"
             columns: ["genre_id"]
             isOneToOne: false
-            referencedRelation: "available_genres"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "book-to-genres_genre_id_fkey"
-            columns: ["genre_id"]
-            isOneToOne: false
             referencedRelation: "genres"
             referencedColumns: ["id"]
           },
         ]
-      }
-      available_genres: {
-        Row: {
-          genre: string | null
-          id: number | null
-        }
-        Insert: {
-          genre?: string | null
-          id?: number | null
-        }
-        Update: {
-          genre?: string | null
-          id?: number | null
-        }
-        Relationships: []
       }
       unique_books: {
         Row: {
