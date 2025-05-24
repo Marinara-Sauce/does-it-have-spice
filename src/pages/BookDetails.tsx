@@ -15,7 +15,7 @@ type Book = {
   author: string;
   genre: string[];
   smut_level: string;
-  specific_locations: string | null;
+  specific_locations: string[] | null;
   notes: string | null;
   isbn: string | null;
   contribution_count?: number;

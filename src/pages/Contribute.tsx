@@ -1,4 +1,3 @@
-
 import { useState, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -117,7 +116,7 @@ const Contribute = () => {
                   `Chapters ${loc.startChapter}${loc.endChapter !== loc.startChapter ? '-' + loc.endChapter : ''}, ` +
                   `Pages ${loc.startPage}${loc.endPage !== loc.startPage ? '-' + loc.endPage : ''}`,
               )
-          : null;
+          : [];
 
       const { data, error } = await supabase
         .from('books')
@@ -127,7 +126,6 @@ const Contribute = () => {
           isbn: formData.isbn || null,
           smut_level: formData.smutLevel,
           specific_locations: formattedLocations,
-          notes: null,
           created_by: user.id,
         })
         .select();
@@ -218,7 +216,7 @@ const Contribute = () => {
               </div>
 
               <div>
-                <Label htmlFor="genres">Genres</Label>
+                <Label htmlFor="genres">Genres *</Label>
                 <GenreSelector selectedGenres={formData.genres} onChange={handleGenresChange} />
               </div>
 
