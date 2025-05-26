@@ -19,11 +19,14 @@ import Layout from '@/components/Layout';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Turnstile } from '@marsidev/react-turnstile';
+import { useTheme } from '@/context/ThemeProvider';
+import { isDarkMode } from '@/lib/utils';
 
 const Auth = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { session } = useAuth();
+  const { theme } = useTheme();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
@@ -161,19 +164,26 @@ const Auth = () => {
                       required
                     />
                   </div>
-                  <div className="flex justify-center">
-                    <Turnstile
-                      siteKey={import.meta.env.VITE_TURNSTILE_KEY}
-                      onSuccess={token => setTurnstileToken(token)}
-                      onError={() => setTurnstileToken(null)}
-                      onExpire={() => setTurnstileToken(null)}
-                    />
-                  </div>
                 </CardContent>
                 <CardFooter>
-                  <Button type="submit" className="w-full" disabled={isLoading || !turnstileToken}>
-                    {isLoading ? 'Signing in...' : 'Sign In'}
-                  </Button>
+                  <div className="w-full">
+                    <div className="flex justify-center pb-6">
+                      <Turnstile
+                        siteKey={import.meta.env.VITE_TURNSTILE_KEY}
+                        onSuccess={token => setTurnstileToken(token)}
+                        onError={() => setTurnstileToken(null)}
+                        onExpire={() => setTurnstileToken(null)}
+                        options={{ theme: isDarkMode(theme) ? 'dark' : 'light' }}
+                      />
+                    </div>
+                    <Button
+                      type="submit"
+                      className="w-full"
+                      disabled={isLoading || !turnstileToken}
+                    >
+                      {isLoading ? 'Creating Account...' : 'Create Account'}
+                    </Button>
+                  </div>
                 </CardFooter>
               </form>
             </Card>
@@ -241,19 +251,26 @@ const Auth = () => {
                       required
                     />
                   </div>
-                  <div className="flex justify-center">
-                    <Turnstile
-                      siteKey={import.meta.env.VITE_TURNSTILE_KEY}
-                      onSuccess={token => setTurnstileToken(token)}
-                      onError={() => setTurnstileToken(null)}
-                      onExpire={() => setTurnstileToken(null)}
-                    />
-                  </div>
                 </CardContent>
                 <CardFooter>
-                  <Button type="submit" className="w-full" disabled={isLoading || !turnstileToken}>
-                    {isLoading ? 'Creating Account...' : 'Create Account'}
-                  </Button>
+                  <div className="w-full">
+                    <div className="flex justify-center pb-6">
+                      <Turnstile
+                        siteKey={import.meta.env.VITE_TURNSTILE_KEY}
+                        onSuccess={token => setTurnstileToken(token)}
+                        onError={() => setTurnstileToken(null)}
+                        onExpire={() => setTurnstileToken(null)}
+                        options={{ theme: isDarkMode(theme) ? 'dark' : 'light' }}
+                      />
+                    </div>
+                    <Button
+                      type="submit"
+                      className="w-full"
+                      disabled={isLoading || !turnstileToken}
+                    >
+                      {isLoading ? 'Creating Account...' : 'Create Account'}
+                    </Button>
+                  </div>
                 </CardFooter>
               </form>
             </Card>
