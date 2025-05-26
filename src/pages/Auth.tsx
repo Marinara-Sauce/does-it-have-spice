@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -18,16 +18,23 @@ import { AlertCircle } from 'lucide-react';
 import Layout from '@/components/Layout';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { Turnstile } from '@marsidev/react-turnstile';
 
 const Auth = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { session } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+
+  // Get initial tab from URL parameter, default to 'login'
+  const initialTab = searchParams.get('tab') === 'signup' ? 'signup' : 'login';
 
   // Form states
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [username, setUsername] = useState('');
 
   // Redirect if already logged in
@@ -42,6 +49,18 @@ const Auth = () => {
     setIsLoading(true);
     setError(null);
 
+    if (!turnstileToken) {
+      setError('Please complete the Turnstile verification');
+      setIsLoading(false);
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
+      setIsLoading(false);
+      return;
+    }
+
     try {
       const { error } = await supabase.auth.signUp({
         email,
@@ -49,7 +68,9 @@ const Auth = () => {
         options: {
           data: {
             username,
+            turnstileToken,
           },
+          captchaToken: turnstileToken,
         },
       });
 
@@ -69,10 +90,17 @@ const Auth = () => {
     setIsLoading(true);
     setError(null);
 
+    if (!turnstileToken) {
+      setError('Please complete the Turnstile verification');
+      setIsLoading(false);
+      return;
+    }
+
     try {
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
+        options: { captchaToken: turnstileToken },
       });
 
       if (error) throw error;
@@ -90,7 +118,7 @@ const Auth = () => {
   return (
     <Layout>
       <div className="container mx-auto py-12 px-4 sm:px-6 max-w-md">
-        <Tabs defaultValue="login" className="w-full">
+        <Tabs defaultValue={initialTab} className="w-full">
           <TabsList className="grid w-full grid-cols-2 mb-6">
             <TabsTrigger value="login">Login</TabsTrigger>
             <TabsTrigger value="signup">Sign Up</TabsTrigger>
@@ -133,9 +161,17 @@ const Auth = () => {
                       required
                     />
                   </div>
+                  <div className="flex justify-center">
+                    <Turnstile
+                      siteKey={import.meta.env.VITE_TURNSTILE_KEY}
+                      onSuccess={token => setTurnstileToken(token)}
+                      onError={() => setTurnstileToken(null)}
+                      onExpire={() => setTurnstileToken(null)}
+                    />
+                  </div>
                 </CardContent>
                 <CardFooter>
-                  <Button type="submit" className="w-full" disabled={isLoading}>
+                  <Button type="submit" className="w-full" disabled={isLoading || !turnstileToken}>
                     {isLoading ? 'Signing in...' : 'Sign In'}
                   </Button>
                 </CardFooter>
@@ -194,9 +230,28 @@ const Auth = () => {
                       Password must be at least 6 characters long.
                     </p>
                   </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="confirm-password">Confirm Password</Label>
+                    <Input
+                      id="confirm-password"
+                      type="password"
+                      placeholder="Confirm your password"
+                      value={confirmPassword}
+                      onChange={e => setConfirmPassword(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="flex justify-center">
+                    <Turnstile
+                      siteKey={import.meta.env.VITE_TURNSTILE_KEY}
+                      onSuccess={token => setTurnstileToken(token)}
+                      onError={() => setTurnstileToken(null)}
+                      onExpire={() => setTurnstileToken(null)}
+                    />
+                  </div>
                 </CardContent>
                 <CardFooter>
-                  <Button type="submit" className="w-full" disabled={isLoading}>
+                  <Button type="submit" className="w-full" disabled={isLoading || !turnstileToken}>
                     {isLoading ? 'Creating Account...' : 'Create Account'}
                   </Button>
                 </CardFooter>
